@@ -1,0 +1,29 @@
+{
+  "name": "excel_reader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "start-server": "node app.js"
+  },
+  "author": "Maria Tanchyn",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "exceljs": "^4.3.0",
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "postgresql": "^0.0.1",
+    "pug": "^3.0.2",
+    "sequelize": "^6.21.3",
+    "xlsx": "^0.18.5",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4"
+  }
+}
