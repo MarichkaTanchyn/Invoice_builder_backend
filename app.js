@@ -3,37 +3,41 @@ const express = require('express');
 
 const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
-const Category = require('./models/category');
 const bodyParser = require("body-parser");
+const multer = require('multer');
 
-const app = express()
+const app = express();
+
+const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'files');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
 
 const categoryRoute = require('./routes/categoryRoute');
+const fileRoute = require('./routes/fileRoute');
 
-// parse requests of content-type -
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(
+    multer({ storage: fileStorage }).single('file')
+);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/files', express.static(path.join(__dirname, 'files')));
 
-
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(express.urlencoded({extended: true}));
-
-// const db = require("./models");
-// db.sequelize.sync()
-//     .then(() => {
-//         console.log("Synced db.");
-//     })
-//     .catch((err) => {
-//         console.log("Failed to sync db: " + err.message);
-//     });
-
+// app.use(bodyParser.json());
 // // drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
 //   console.log("Drop and re-sync db.");
 // });
 
 app.use(categoryRoute);
+app.use(fileRoute);
 app.use(errorController.get404);
+
+
 
 try {
     sequelize.authenticate();

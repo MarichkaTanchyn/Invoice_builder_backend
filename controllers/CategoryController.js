@@ -32,10 +32,9 @@ exports.addCategory = (req, res) => {
 exports.getCategories = (req, res, next) => {
     Category.findAll()
         .then((categories) => {
-            console.log(categories.rows);
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(categories.rows));
+            res.end(JSON.stringify(categories));
             return res;
         })
-        .catch(err => console.log(err));
+        .catch(err => console.log("err"));
 };
