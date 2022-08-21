@@ -5,7 +5,6 @@ const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
 const bodyParser = require("body-parser");
 const multer = require('multer');
-
 const app = express();
 
 const fileStorage = multer.diskStorage({
@@ -36,7 +35,6 @@ app.use('/files', express.static(path.join(__dirname, 'files')));
 app.use(categoryRoute);
 app.use(fileRoute);
 app.use(errorController.get404);
-
 
 
 try {
