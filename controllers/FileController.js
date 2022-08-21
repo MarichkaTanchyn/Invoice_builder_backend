@@ -1,4 +1,4 @@
-const readFile = require('../services/readExcel');
+const readFile = require('../middleware/readExcel');
 
 exports.postFile = (req, res, next) => {
     console.log(req.file);

@@ -6,6 +6,7 @@ const sequelize = require('./util/database');
 const bodyParser = require("body-parser");
 const multer = require('multer');
 const app = express();
+const Role = require('./models/role');
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -18,6 +19,8 @@ const fileStorage = multer.diskStorage({
 
 const categoryRoute = require('./routes/categoryRoute');
 const fileRoute = require('./routes/fileRoute');
+const authRoute = require('./routes/authRoute');
+const userRoute = require('./routes/userRoute');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(
@@ -26,16 +29,37 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/files', express.static(path.join(__dirname, 'files')));
 
+app.use(function(req, res, next) {
+    res.header(
+        "Access-Control-Allow-Headers",
+        "x-access-token, Origin, Content-Type, Accept"
+    );
+    next();
+});
 // app.use(bodyParser.json());
 // // drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
 //   console.log("Drop and re-sync db.");
 // });
 
+// function initial() {
+//     Role.create({
+//         id: 1,
+//         name: "user"
+//     });
+//
+//
+//     Role.create({
+//         id: 2,
+//         name: "admin"
+//     });
+// }
+
 app.use(categoryRoute);
 app.use(fileRoute);
+app.use(authRoute);
+app.use(userRoute);
 app.use(errorController.get404);
-
 
 try {
     sequelize.authenticate();
@@ -49,6 +73,7 @@ sequelize
     .sync()
     .then(cart => {
         app.listen(3000);
+        // initial()
     })
     .catch(err => {
         console.log(err);
