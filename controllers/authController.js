@@ -2,7 +2,7 @@ const db = require("../models");
 const config = require("../util/auth.js");
 const User = db.user;
 const Role = db.role;
-const Op = db.Sequelize.Op;
+// const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
@@ -15,7 +15,7 @@ exports.signup = (req, res) => {
         });
         return;
     }
-    console.log("Meeeeeeeeeeeeeeeeeeee",req.body);
+    console.log("Meeeeeeeeeeeeeeeeeeee", req.body);
 
     const user = {
         username: req.body.username,
@@ -25,51 +25,37 @@ exports.signup = (req, res) => {
     }
 
     User.create(user)
-        .then(data => {
-            console.log(data);
-            res.send(data);
+        .then(user => {
+            if (req.body.roles) {
+                Role.findAll({
+                    where: {
+                        name : req.body.roles
+                    }
+                }).then(roles => {
+                    user.setRoles(roles).then(() => {
+                        res.send(user);
+                        // res.send({message: "User was registered successfully!"});
+                    });
+                });
+            }
         })
         .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Tutorial."
-            });
+            res.status(500).send({message: err.message});
         });
-        // .then(user => {
-        //     if (req.body.roles) {
-        //         Role.findAll({
-        //             where: {
-        //                 name: {
-        //                     [Op.or]: req.body.roles
-        //                 }
-        //             }
-            //     }).then(roles => {
-            //         user.setRoles(roles).then(() => {
-            //             res.send({ message: "User was registered successfully!" });
-            //         });
-            //     });
-            // } else {
-            //     // user role = 1
-            //     user.setRoles([1]).then(() => {
-            //         res.send({ message: "User was registered successfully!" });
-        //         });
-        //     }
-        // })
-        // .catch(err => {
-        //     res.status(500).send({ message: err.message });
-        // });
 };
 
 
 exports.signin = (req, res) => {
+    console.log(req.body)
     User.findOne({
         where: {
             username: req.body.username
         }
     })
         .then(user => {
+            console.log(user);
             if (!user) {
-                return res.status(404).send({ message: "User Not found." });
+                return res.status(404).send({message: "User Not found."});
             }
             var passwordIsValid = bcrypt.compareSync(
                 req.body.password,
@@ -81,7 +67,7 @@ exports.signin = (req, res) => {
                     message: "Invalid Password!"
                 });
             }
-            var token = jwt.sign({ id: user.id }, config.secret, {
+            var token = jwt.sign({id: user.id}, config.secret, {
                 expiresIn: 86400 // 24 hours
             });
             var authorities = [];
@@ -99,6 +85,6 @@ exports.signin = (req, res) => {
             });
         })
         .catch(err => {
-            res.status(500).send({ message: err.message });
+            res.status(500).send({message: err.message});
         });
 };
