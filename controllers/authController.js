@@ -2,10 +2,8 @@ const db = require("../models");
 const config = require("../util/auth.js");
 const User = db.user;
 const Role = db.role;
-// const Op = db.Sequelize.Op;
-var jwt = require("jsonwebtoken");
-var bcrypt = require("bcryptjs");
-
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 exports.signup = (req, res) => {
 
@@ -15,7 +13,6 @@ exports.signup = (req, res) => {
         });
         return;
     }
-    console.log("Meeeeeeeeeeeeeeeeeeee", req.body);
 
     const user = {
         username: req.body.username,
@@ -45,7 +42,7 @@ exports.signup = (req, res) => {
 };
 
 
-exports.signin = (req, res) => {
+exports.signIn = (req, res) => {
     console.log(req.body)
     User.findOne({
         where: {
@@ -57,7 +54,7 @@ exports.signin = (req, res) => {
             if (!user) {
                 return res.status(404).send({message: "User Not found."});
             }
-            var passwordIsValid = bcrypt.compareSync(
+            let passwordIsValid = bcrypt.compareSync(
                 req.body.password,
                 user.password
             );
@@ -67,10 +64,10 @@ exports.signin = (req, res) => {
                     message: "Invalid Password!"
                 });
             }
-            var token = jwt.sign({id: user.id}, config.secret, {
+            let token = jwt.sign({id: user.id}, config.secret, {
                 expiresIn: 86400 // 24 hours
             });
-            var authorities = [];
+            let authorities = [];
             user.getRoles().then(roles => {
                 for (let i = 0; i < roles.length; i++) {
                     authorities.push("ROLE_" + roles[i].name.toUpperCase());

@@ -1,12 +1,4 @@
 var XLSX = require('xlsx');
-// var wb = XLSX.readFile("./data/rex.xlsx");
-
-
-// var sheet_name_list = wb.SheetNames;
-// console.log(XLSX.utils.sheet_to_json(wb.Sheets[sheet_name_list[0]]));
-
-// var obj = XLSX.utils.sheet_to_json(wb.Sheets[sheet_name_list[0]]);
-
 
 function readFile(filePath){
     let workbook = XLSX.readFile(filePath);

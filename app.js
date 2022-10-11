@@ -22,6 +22,7 @@ const fileRoute = require('./routes/fileRoute');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
 
+//
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(
     multer({ storage: fileStorage }).single('file')
@@ -29,7 +30,7 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/files', express.static(path.join(__dirname, 'files')));
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
     res.header(
         "Access-Control-Allow-Headers",
         "x-access-token, Origin, Content-Type, Accept"

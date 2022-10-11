@@ -7,7 +7,7 @@ const express = require('express');
 
 const router = express.Router();
 
-router.get("/api/test/all", UserController.allAccess);
+router.get("/api/Users", UserController.allUsers);
 
 router.get(
     "/api/test/user",
