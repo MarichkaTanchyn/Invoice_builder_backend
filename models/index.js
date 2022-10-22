@@ -20,12 +20,12 @@ db.employee.belongsToMany(db.role, {
     foreignKey: "userId",
     otherKey: "roleId"
 });
-// db.company.hasMany(db.person);
-// db.person.belongsTo(db.company);
 
 db.employee.belongsTo(db.person);
 db.person.hasOne(db.employee);
 
+db.company.hasMany(db.person);
+db.person.belongsTo(db.company);
 
 db.ROLES = ["user", "admin"];//TODO: change to different
 module.exports = db;

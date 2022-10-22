@@ -1,9 +1,8 @@
 const Sequelize = require('sequelize');
 
 const sequelize = require('../util/database');
-const Employee = require("./employee");
 
-const Role = sequelize.define("roles", {
+const Role = sequelize.define("Role", {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true
