@@ -5,17 +5,27 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.user = require("./user");
+db.employee = require("./employee");
 db.role = require("./role");
-db.role.belongsToMany(db.user, {
+db.company = require("./company");
+db.person = require("./person");
+
+db.role.belongsToMany(db.employee, {
     through: "user_roles",
     foreignKey: "roleId",
     otherKey: "userId"
 });
-db.user.belongsToMany(db.role, {
+db.employee.belongsToMany(db.role, {
     through: "user_roles",
     foreignKey: "userId",
     otherKey: "roleId"
 });
-db.ROLES = ["user", "admin"];
+// db.company.hasMany(db.person);
+// db.person.belongsTo(db.company);
+
+db.employee.belongsTo(db.person);
+db.person.hasOne(db.employee);
+
+
+db.ROLES = ["user", "admin"];//TODO: change to different
 module.exports = db;

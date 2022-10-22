@@ -1,5 +1,4 @@
 const db = require("../models");
-const {runOnChangeOnly} = require("nodemon/lib/config/defaults");
 const ROLES = db.ROLES;
 const User = db.user;
 checkDuplicateUsernameOrEmail = (req, res, next) => {

@@ -48,7 +48,9 @@ exports.signIn = (req, res) => {
         where: {
             username: req.body.username
         }
-    })
+    }
+
+    )
         .then(user => {
             console.log(user);
             if (!user) {

@@ -22,7 +22,7 @@ const fileRoute = require('./routes/fileRoute');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
 
-//
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(
     multer({ storage: fileStorage }).single('file')
@@ -55,13 +55,6 @@ app.use((req, res, next) => {
 //         name: "admin"
 //     });
 // }
-
-app.use(categoryRoute);
-app.use(fileRoute);
-app.use(authRoute);
-app.use(userRoute);
-app.use(errorController.get404);
-
 try {
     sequelize.authenticate();
     console.log('Connection has been established successfully.');
@@ -79,4 +72,11 @@ sequelize
     .catch(err => {
         console.log(err);
     });
+app.use(categoryRoute);
+app.use(fileRoute);
+app.use(authRoute);
+app.use(userRoute);
+app.use(errorController.get404);
+
+
 
