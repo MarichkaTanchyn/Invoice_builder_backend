@@ -11,7 +11,6 @@ exports.addCategory = (req, res) => {
     const category = {
         name: req.body.name,
         description: req.body.description,
-        imageUrl: req.body.imageUrl
     }
 
     Category.create(category)

@@ -1,5 +1,7 @@
 const readFile = require('../middleware/readExcel');
 
+// this gets csv file and send headers as response
+
 exports.postFile = (req, res, next) => {
     console.log(req.file);
     if (!req.file) {
@@ -13,7 +15,6 @@ exports.postFile = (req, res, next) => {
     let result = readFile.readFile(file.path);
     const data = result[0],
          headers = result[1];
-    console.log('Here')
 
     res.send(headers);
 }

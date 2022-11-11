@@ -13,7 +13,7 @@ router.post(
         verifySignUp.checkDuplicateUsernameOrEmail,
         verifySignUp.checkRolesExisted
     ],
-    controller.signup
+    controller.signupToExistingCompany
 );
 router.post("/api/auth/signIn", controller.signIn);
 module.exports = router;
