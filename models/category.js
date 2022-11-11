@@ -11,7 +11,6 @@ const Category = sequelize.define('Category', {
     },
     name: Sequelize.STRING,
     description: Sequelize.STRING,
-    imageUrl: Sequelize.STRING
 });
 
 module.exports = Category;
