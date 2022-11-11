@@ -8,14 +8,25 @@ const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
         allowNull: false,
         primaryKey: true
     },
-    name: Sequelize.STRING,
-    creationDate: Sequelize.DATE,
-    validTo: Sequelize.DATE,
+    documentNumber:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    documentName: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    creationDate: {
+        type: Sequelize.DATE,
+        allowNull: false
+    },
+    validTo: {
+        type: Sequelize.DATE,
+        allowNull: false
+    },
     status: Sequelize.STRING,
-    documentNumber: Sequelize.STRING,
-    documentName: Sequelize.STRING,
     typeOfDocument : Sequelize.STRING,
-    //file
+    //TODO: file pdf
 });
 
 module.exports = InvoiceOrQuote;

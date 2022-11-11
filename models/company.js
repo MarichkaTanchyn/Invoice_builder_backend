@@ -8,12 +8,30 @@ const Company = sequelize.define('Company', {
         allowNull: false,
         primaryKey: true
     },
-    name: Sequelize.STRING,
-    address: Sequelize.STRING,
-    country: Sequelize.STRING,
-    city: Sequelize.STRING,
-    postalCode: Sequelize.INTEGER,
-    nip: Sequelize.INTEGER
+    name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    address:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    country: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    city: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    postalCode:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    nip: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
 });
 
 module.exports = Company;

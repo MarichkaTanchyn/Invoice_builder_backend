@@ -15,9 +15,18 @@ const Customer = sequelize.define('Customer',{
         allowNull: true
     },
     address: Sequelize.STRING,
-    country: Sequelize.STRING,
-    city: Sequelize.STRING,
-    postalCode: Sequelize.INTEGER,
+    country: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    city: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    postalCode: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     nip: {
         type: Sequelize.INTEGER,
         allowNull: true

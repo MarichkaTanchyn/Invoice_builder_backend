@@ -9,7 +9,10 @@ const Category = sequelize.define('Category', {
         allowNull: false,
         primaryKey: true
     },
-    name: Sequelize.STRING,
+    name: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     description: Sequelize.STRING,
 });
 
