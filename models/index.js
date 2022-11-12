@@ -19,80 +19,88 @@ db.product = require('./product');
 db.role.belongsToMany(db.employee, {
     through: "employee_roles",
     foreignKey: "roleId",
-    otherKey: "employeeId"
+    otherKey: "employeeId",
+    onDelete: "cascade"
 });
 db.employee.belongsToMany(db.role, {
     through: "employee_roles",
     foreignKey: "employeeId",
-    otherKey: "roleId"
+    otherKey: "roleId",
+    onDelete: "cascade"
 });
 
 // COMPANY & PERSON
-db.company.hasMany(db.person);
-db.person.belongsTo(db.company);
+db.company.hasMany(db.person, { onDelete: 'cascade' });
+db.person.belongsTo(db.company, { onDelete: 'cascade' });
 
 // EMPLOYEE & PERSON
-db.employee.belongsTo(db.person);
-db.person.hasOne(db.employee);
+db.employee.belongsTo(db.person, { onDelete: 'cascade' });
+db.person.hasOne(db.employee, { onDelete: 'cascade' });
 
 // PERSON & CUSTOMER
-db.person.hasMany(db.customer);
-db.customer.belongsTo(db.person);
+db.person.hasMany(db.customer, { onDelete: 'cascade' });
+db.customer.belongsTo(db.person, { onDelete: 'cascade' });
 
 // COMPANY & CUSTOMER
 db.company.belongsToMany(db.customer, {
     through: "company_customers",
     foreignKey: "companyId",
-    otherKey: "customerId"
+    otherKey: "customerId",
+    onDelete: "cascade"
 });
 db.customer.belongsToMany(db.company,{
     through: "company_customers",
     foreignKey: "customerId",
-    otherKey: "companyId"
+    otherKey: "companyId",
+    onDelete: "cascade"
 });
 
 // CATEGORY TO CATEGORY
-db.category.hasMany(db.category);
-db.category.hasOne(db.category);
+db.category.hasMany(db.category, { onDelete: 'cascade' });
+db.category.hasOne(db.category, { onDelete: 'cascade' });
 
 // CATEGORY & COMPANY
-db.company.hasMany(db.category);
-db.category.belongsTo(db.company);
+db.company.hasMany(db.category, { onDelete: 'cascade' });
+db.category.belongsTo(db.company, { onDelete: 'cascade' });
 
 //CATEGORY & PRODUCT
-db.category.hasMany(db.product);
-db.product.belongsTo(db.category);
+db.category.hasMany(db.product, { onDelete: 'cascade' });
+db.product.belongsTo(db.category, { onDelete: 'cascade' });
 
 // INVOICE & EMPLOYEE
-db.employee.hasMany(db.invoice);
-db.invoice.belongsTo(db.employee);
+db.employee.hasMany(db.invoice, { onDelete: 'cascade' });
+db.invoice.belongsTo(db.employee, { onDelete: 'cascade' });
 
 // INVOICE & PRODUCT
 db.invoice.belongsToMany(db.product, {
     through: "invoice_products",
     foreignKey: "invoiceId",
-    otherKey: "productId"
+    otherKey: "productId",
+    onDelete: "cascade"
 })
 db.product.belongsToMany(db.invoice, {
     through: "invoice_products",
     foreignKey: "productId",
-    otherKey: "invoiceId"
-})
+    otherKey: "invoiceId",
+    onDelete: "cascade"
+},)
 
 // INVOICE DRAFT & EMPLOYEE
-db.employee.hasMany(db.invoiceDraft);
-db.invoiceDraft.belongsTo(db.employee);
+db.employee.hasMany(db.invoiceDraft, { onDelete: 'cascade' });
+db.invoiceDraft.belongsTo(db.employee, { onDelete: 'cascade' });
 
 //INVOICE DRAFT & PRODUCT
 db.invoiceDraft.belongsToMany(db.product, {
     through: "invoiceDraft_products",
     foreignKey: "invoiceDraftId",
-    otherKey: "productId"
+    otherKey: "productId",
+    onDelete: "cascade"
 })
 db.product.belongsToMany(db.invoice, {
     through: "invoiceDraft_products",
     foreignKey: "productId",
-    otherKey: "invoiceDraftId"
+    otherKey: "invoiceDraftId",
+    onDelete: "cascade"
 })
 
 
