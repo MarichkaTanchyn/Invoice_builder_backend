@@ -2,59 +2,97 @@ const db = require("../models");
 const config = require("../util/auth.js");
 const Employee = db.employee;
 const Role = db.role;
+const Company = db.company;
+const Person = db.person;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const companyController = require('./companyController');
 
-exports.signupNewCompany = (req, res) => {
-
-
-}
-
-
-exports.signupToExistingCompany = (req, res) => {
-    if (!req.body.username || !req.body.email) {
+exports.signup = (req, res) => {
+    console.log("here");
+    console.log(req.body);
+    if (!req.body.password || !req.body.email || ! req.body.firmName) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
         return;
     }
 
-    const employee = {
-        //TODO: take firm token to check firm
+
+    if (req.body.token) {
+        // register a new user to existed company
+    }
+    // else register new company and user
+
+    const company = {
         firmName: req.body.firmName,
+    }
+    const person = {
+        email: req.body.email,
+    }
+    const employee = {
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 8)
     }
-    Employee.create(employee)
-        .then(employee => {
-            if (req.body.roles) {
-                Role.findAll({
-                    where: {
-                        name : req.body.roles
-                    }
-                }).then(roles => {
-                    employee.setRoles(roles).then(() => {
-                        res.send(employee);
-                        // res.send({message: "Employee was registered successfully!"});
+
+    Company.create(company).then(
+        Person.create(person)
+    ).then(
+        Employee.create(employee)
+    ).then(employee => {
+                if (req.body.roles) {
+                    Role.findAll({
+                        where: {
+                            name: req.body.roles
+                        }
+                    }).then(roles => {
+                        // employee.setRoles(roles).then(() => {
+                            res.send(company,person,employee);
+                            // res.send({message: "Employee was registered successfully!"});
+                        // });
                     });
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({message: err.message});
-        });
+                }
+            })
+            .catch(err => {
+                res.status(500).send({message: err.message});
+            });
+
+
+    // const employee = {
+    //     //TODO: take firm token to check firm
+    //     firmName: req.body.firmName,
+    //     email: req.body.email,
+    //     password: bcrypt.hashSync(req.body.password, 8)
+    // }
+    // //TODO: change logic, I need to check to wich company employee is singing up
+    // Employee.create(employee)
+    //     .then(employee => {
+    //         if (req.body.roles) {
+    //             Role.findAll({
+    //                 where: {
+    //                     name: req.body.roles
+    //                 }
+    //             }).then(roles => {
+    //                 employee.setRoles(roles).then(() => {
+    //                     res.send(employee);
+    //                     // res.send({message: "Employee was registered successfully!"});
+    //                 });
+    //             });
+    //         }
+    //     })
+    //     .catch(err => {
+    //         res.status(500).send({message: err.message});
+    //     });
 };
 
 
 exports.signIn = (req, res) => {
     console.log(req.body)
     Employee.findOne({
-        where: {
-            username: req.body.username
+            where: {
+                username: req.body.username
+            }
         }
-    }
     )
         .then(employee => {
             console.log(employee);

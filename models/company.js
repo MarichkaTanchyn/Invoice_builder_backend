@@ -8,29 +8,29 @@ const Company = sequelize.define('Company', {
         allowNull: false,
         primaryKey: true
     },
-    name: {
+    firmName: {
         type: Sequelize.STRING,
         allowNull: false
     },
     address:{
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     country: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     city: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     postalCode:{
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     nip: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
     },
 });
 

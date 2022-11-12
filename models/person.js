@@ -11,11 +11,11 @@ const Person = sequelize.define("Person", {
     },
     firstName: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     lastName:  {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     },
     middleName: {
         type: Sequelize.STRING,
@@ -27,7 +27,7 @@ const Person = sequelize.define("Person", {
     },
     phoneNumber:  {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
     }
 })
 

@@ -10,10 +10,10 @@ const router = express.Router();
 router.post(
     "/api/auth/signup",
     [
-        verifySignUp.checkDuplicateUsernameOrEmail,
+        verifySignUp.checkDuplicateEmail,
         verifySignUp.checkRolesExisted
     ],
-    controller.signupToExistingCompany
+    controller.signup
 );
 router.post("/api/auth/signIn", controller.signIn);
 module.exports = router;

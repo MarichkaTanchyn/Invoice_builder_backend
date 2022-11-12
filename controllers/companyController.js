@@ -1,6 +1,6 @@
 const Company = require("../models/company");
 
 
-exports.addCompany = (req, res) => {
+exports.getAllCompanies = (req, res) => {
 
 }

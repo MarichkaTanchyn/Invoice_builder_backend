@@ -20,7 +20,6 @@ const fileStorage = multer.diskStorage({
 const categoryRoute = require('./routes/categoryRoute');
 const fileRoute = require('./routes/fileRoute');
 const authRoute = require('./routes/authRoute');
-const userRoute = require('./routes/userRoute');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -38,7 +37,7 @@ app.use((req, res, next) => {
     next();
 });
 // app.use(bodyParser.json());
-// // drop the table if it already exists
+// drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
 //   console.log("Drop and re-sync db.");
 // });
@@ -75,7 +74,6 @@ sequelize
 app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
-app.use(userRoute);
 app.use(errorController.get404);
 
 
