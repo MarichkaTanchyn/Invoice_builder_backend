@@ -8,124 +8,85 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
     console.log("here");
     console.log(req.body);
-    if (!req.body.password || !req.body.email || ! req.body.firmName) {
+    if (!req.body.password || !req.body.email || !req.body.firmName) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
         return;
     }
 
-
     if (req.body.token) {
-        // register a new user to existed company
-    }
-    // else register new company and user
-
-    const company = {
-        firmName: req.body.firmName,
-    }
-    const person = {
-        email: req.body.email,
-    }
-    const employee = {
-        email: req.body.email,
-        password: bcrypt.hashSync(req.body.password, 8)
-    }
-
-    Company.create(company).then(
-        Person.create(person)
-    ).then(
-        Employee.create(employee)
-    ).then(employee => {
-                if (req.body.roles) {
-                    Role.findAll({
-                        where: {
-                            name: req.body.roles
-                        }
-                    }).then(roles => {
-                        // employee.setRoles(roles).then(() => {
-                            res.send(company,person,employee);
-                            // res.send({message: "Employee was registered successfully!"});
-                        // });
-                    });
-                }
-            })
-            .catch(err => {
-                res.status(500).send({message: err.message});
+        //TODO register a new user to existed company
+    } else {
+        try {
+            let company = {
+                firmName: req.body.firmName,
+            }
+            company = await Company.create(company, {validate: true});
+            let person = {
+                CompanyId: company.id,
+                email: req.body.email
+            }
+            person = await Person.create(person, {validate: true});
+            let employee = {
+                PersonId: person.id,
+                email: req.body.email,
+                password: bcrypt.hashSync(req.body.password, 8)
+            }
+            employee = await Employee.create(employee, {validate: true});
+            res.send({
+                "company": company,
+                "person": person,
+                "employee": employee
             });
-
-
-    // const employee = {
-    //     //TODO: take firm token to check firm
-    //     firmName: req.body.firmName,
-    //     email: req.body.email,
-    //     password: bcrypt.hashSync(req.body.password, 8)
-    // }
-    // //TODO: change logic, I need to check to wich company employee is singing up
-    // Employee.create(employee)
-    //     .then(employee => {
-    //         if (req.body.roles) {
-    //             Role.findAll({
-    //                 where: {
-    //                     name: req.body.roles
-    //                 }
-    //             }).then(roles => {
-    //                 employee.setRoles(roles).then(() => {
-    //                     res.send(employee);
-    //                     // res.send({message: "Employee was registered successfully!"});
-    //                 });
-    //             });
-    //         }
-    //     })
-    //     .catch(err => {
-    //         res.status(500).send({message: err.message});
-    //     });
+        } catch (error) {
+            console.error(error);
+        }
+    }
 };
 
 
-exports.signIn = (req, res) => {
+exports.signIn = async (req, res) => {
     console.log(req.body)
-    Employee.findOne({
+    let employee = await Employee.findOne({
             where: {
                 username: req.body.username
             }
         }
-    )
-        .then(employee => {
-            console.log(employee);
-            if (!employee) {
-                return res.status(404).send({message: "Employee Not found."});
-            }
-            let passwordIsValid = bcrypt.compareSync(
-                req.body.password,
-                employee.password
-            );
-            if (!passwordIsValid) {
-                return res.status(401).send({
-                    accessToken: null,
-                    message: "Invalid Password!"
-                });
-            }
-            let token = jwt.sign({id: employee.id}, config.secret, {
-                expiresIn: 86400 // 24 hours
-            });
-            let authorities = [];
-            employee.getRoles().then(roles => {
-                for (let i = 0; i < roles.length; i++) {
-                    authorities.push("ROLE_" + roles[i].name.toUpperCase());
-                }
-                res.status(200).send({
-                    id: employee.id,
-                    email: employee.email,
-                    roles: authorities,
-                    accessToken: token
-                });
-            });
-        })
-        .catch(err => {
-            res.status(500).send({message: err.message});
+    );
+
+    console.log(employee);
+    if (!employee) {
+        return res.status(404).send({message: "Employee Not found."});
+    }
+    let passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        employee.password
+    );
+    if (!passwordIsValid) {
+        return res.status(401).send({
+            accessToken: null,
+            message: "Invalid Password!"
         });
+    }
+    let token = jwt.sign({id: employee.id}, config.secret, {
+        expiresIn: 86400 // 24 hours
+    });
+    let authorities = [];
+    let roles = employee.getRoles();
+
+    for (let i = 0; i < roles.length; i++) {
+        authorities.push("ROLE_" + roles[i].name.toUpperCase());
+    }
+    res.status(200).send({
+        id: employee.id,
+        email: employee.email,
+        roles: authorities,
+        accessToken: token
+    });
+
+
 };

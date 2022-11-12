@@ -60,13 +60,12 @@ db.company.hasMany(db.category);
 db.category.belongsTo(db.company);
 
 //CATEGORY & PRODUCT
-db.product.hasOne(db.category);
 db.category.hasMany(db.product);
-
+db.product.belongsTo(db.category);
 
 // INVOICE & EMPLOYEE
 db.employee.hasMany(db.invoice);
-db.invoice.hasOne(db.employee);
+db.invoice.belongsTo(db.employee);
 
 // INVOICE & PRODUCT
 db.invoice.belongsToMany(db.product, {
@@ -82,7 +81,7 @@ db.product.belongsToMany(db.invoice, {
 
 // INVOICE DRAFT & EMPLOYEE
 db.employee.hasMany(db.invoiceDraft);
-db.invoiceDraft.hasOne(db.employee);
+db.invoiceDraft.belongsTo(db.employee);
 
 //INVOICE DRAFT & PRODUCT
 db.invoiceDraft.belongsToMany(db.product, {
@@ -96,7 +95,6 @@ db.product.belongsToMany(db.invoice, {
     otherKey: "invoiceDraftId"
 })
 
-//TODO: Invoice, category, product associations
 
 db.ROLES = ["user", "admin"];//TODO: change to different
 module.exports = db;

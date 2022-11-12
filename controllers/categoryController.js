@@ -1,39 +1,35 @@
 const Category = require("../models/category");
 
-exports.addCategory = (req, res) => {
+exports.addCategory = async (req, res) => {
     if (!req.body.name || !req.body.description) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
         return;
     }
-
-    const category = {
-        name: req.body.name,
-        description: req.body.description,
-    }
-
-    Category.create(category)
-        .then(data => {
-            console.log(data);
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Tutorial."
-            });
+    try {
+        let category = {
+            name: req.body.name,
+            description: req.body.description,
+        }
+        category = await Category.create(category)
+        res.send(category);
+    } catch (err) {
+        res.status(500).send({
+            message:
+                err.message || "Some error occurred while creating the Tutorial."
         });
-
+    }
 }
 
 
-exports.getCategories = (req, res, next) => {
-    Category.findAll()
-        .then((categories) => {
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(categories));
-            return res;
-        })
-        .catch(err => console.log("err"));
+exports.getCategories = async (req, res, next) => {
+    try {
+        let categories = await Category.findAll()
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(categories));
+        return res;
+    } catch (error) {
+        console.error(error);
+    }
 };

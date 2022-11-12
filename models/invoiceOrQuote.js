@@ -26,7 +26,7 @@ const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
     },
     status: Sequelize.STRING,
     typeOfDocument : Sequelize.STRING,
-    //TODO: file pdf
+    invoiceFile : Sequelize.BLOB
 });
 
 module.exports = InvoiceOrQuote;
