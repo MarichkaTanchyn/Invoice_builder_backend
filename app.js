@@ -21,6 +21,7 @@ const categoryRoute = require('./routes/categoryRoute');
 const fileRoute = require('./routes/fileRoute');
 const authRoute = require('./routes/authRoute');
 const companyRoute = require('./routes/companyRoute');
+const employeeRoute = require('./routes/employeeRoute');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -72,11 +73,11 @@ sequelize
     .catch(err => {
         console.log(err);
     });
+app.use(employeeRoute);
 app.use(companyRoute);
 app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
-
 app.use(errorController.get404);
 
 

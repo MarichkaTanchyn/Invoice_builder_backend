@@ -13,8 +13,31 @@ exports.getAllCompanies = async (req, res) => {
         });
     }
 }
+
+exports.getCompany = async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            message: "Content can not be empty!"
+        });
+        return;
+    }
+    try {
+       let company = await Company.findAll({
+            where: {
+                id : req.params.id
+            }
+        })
+        res.status(200).send(company)
+    } catch (error) {
+        res.status(500).send({
+            message:
+                error.message || "Some error occurred while get request"
+        });
+    }
+}
+
+
 exports.deleteCompany = async (req, res) => {
-    console.log(req.params)
     if (!req.params.id) {
         res.status(400).send({
             message: "Content can not be empty!"
