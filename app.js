@@ -36,9 +36,14 @@ app.use((req, res, next) => {
         "Access-Control-Allow-Headers",
         "x-access-token, Origin, Content-Type, Accept"
     );
+    // TODO: factor out all sensitive data to env variables
+    // TODO: Env variables can be called with process.env.NAME_OF_VARIABLE
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
     next();
 });
 app.use(bodyParser.json());
+
+// app.set('view engine', 'pug')
 // drop the table if it already exists
 // db.sequelize.sync({ force: true }).then(() => {
 //   console.log("Drop and re-sync db.");
@@ -78,7 +83,7 @@ app.use(companyRoute);
 app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
-app.use(errorController.get404);
+// app.use(errorController.get404);
 
 
 

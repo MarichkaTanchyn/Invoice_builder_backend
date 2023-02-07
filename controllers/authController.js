@@ -9,8 +9,6 @@ const bcrypt = require("bcryptjs");
 
 
 exports.signup = async (req, res) => {
-    console.log("here");
-    console.log(req.body);
     if (!req.body.password || !req.body.email || !req.body.firmName) {
         res.status(400).send({
             message: "Content can not be empty!"
