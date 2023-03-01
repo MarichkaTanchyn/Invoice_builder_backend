@@ -25,14 +25,13 @@ exports.addCategory = async (req, res) => {
     } catch (err) {
         res.status(500).send({
             message:
-                err.message || "Some error occurred while creating the Tutorial."
+                err.message || "Some error occurred while creating the Category."
         });
     }
 }
 
 
 exports.getCategories = async (req, res, next) => {
-    console.log("me")
     console.log(req.params.id)
     if (!req.params.id) {
         res.status(400).send({
@@ -53,3 +52,26 @@ exports.getCategories = async (req, res, next) => {
         console.error(error);
     }
 };
+
+exports.deleteCategory = async (req, res) => {
+    if (!req.params.id, !req.params.companyId) {
+        res.status(400).send({
+            message: "ID can not be empty!"
+        });
+        return;
+    }
+    try {
+        await Category.destroy({
+            where: {
+                id: req.params.id,
+                CompanyId: req.params.companyId
+            }
+        })
+        res.send({
+            message: "Category was deleted successfully!"
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+

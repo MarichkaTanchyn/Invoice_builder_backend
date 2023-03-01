@@ -40,23 +40,45 @@ exports.getCompany = async (req, res) => {
 exports.deleteCompany = async (req, res) => {
     if (!req.params.id) {
         res.status(400).send({
-            message: "Content can not be empty!"
+            message: "ID can not be empty!"
         });
         return;
     }
     try {
         //TODO: cascade remove all the values with that company id, because now it is only deleting company Id prom other tables
-        await Company.destroy({
+        let company = await Company.destroy({
             where: {
                 id : req.params.id
             }
         })
-        res.status(200).send("Was deleted company with id " +  req.params.id)
+        res.status(200).send(company)
     } catch (error) {
         res.status(500).send({
             message:
-                error.message || "Some error occurred while DELETing Company"
+                error.message || "Some error occurred while delete request"
         });
     }
-
 }
+
+exports.updateCompany = async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            message: "ID can not be empty!"
+        });
+        return;
+    }
+    try {
+        let company = await Company.update(req.body, {
+            where: {
+                id : req.params.id
+            }
+        })
+        res.status(200).send(company)
+    } catch (error) {
+        res.status(500).send({
+            message:
+                error.message || "Some error occurred while update request"
+        });
+    }
+}
+
