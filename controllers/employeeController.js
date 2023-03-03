@@ -1,6 +1,6 @@
 const Employee = require("../models/employee");
 const Person = require("../models/person");
-const {where} = require("sequelize");
+const bcrypt = require("bcryptjs");
 
 exports.getEmployeesInCompany = async (req, res) => {
     if (!req.params.id) {
@@ -15,11 +15,12 @@ exports.getEmployeesInCompany = async (req, res) => {
                 model: Person,
                 required: true,
                 where: {
-                    CompanyId : req.params.id
-                }},
+                    CompanyId: req.params.id
+                }
+            },
         })
         res.status(200).send(employees)
-    }catch (error) {
+    } catch (error) {
         res.status(500).send({
             message:
                 error.message || "Some error occurred"
@@ -34,19 +35,35 @@ exports.addEmployee = async (req, res) => {
         });
         return;
     }
-    if (!req.body.name) {
+    if (!req.body.name || !req.body.surname) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
         return;
     }
     try {
-        let employee = {
-            name: req.body.name,
-            surname: req.body.surname,
-            CompanyId: req.params.id
+        // let emailExists = Employee.findAll({where: {email: req.body.email}})
+        // if (!emailExists.empty) {
+        //     res.status(400).send({
+        //         message: "Email already exists!"
+        //     });
+        //     return;
+        // }
+        let person = {
+            CompanyId: req.params.id,
+            firstName: req.body.name,
+            lastName: req.body.surname,
+            middleName: req.body.middleName,
+            phoneNumber: req.body.phoneNumber,
+            email: req.body.email
         }
-        employee = await Employee.create(employee)
+        person = await Person.create(person, {validate: true});
+        let employee = {
+            PersonId: person.id,
+            email: req.body.email,
+            password: bcrypt.hashSync(req.body.password, 8)
+        }
+        employee = await Employee.create(employee, {validate: true});
         res.send(employee);
     } catch (err) {
         res.status(500).send({
@@ -64,12 +81,17 @@ exports.deleteEmployee = async (req, res) => {
         return;
     }
     try {
-        let employee = await Employee.destroy({
+        await Employee.destroy({
             where: {
-                id : req.params.id
+                id: req.params.id
             }
         })
-        res.status(200).send(employee)
+        await Person.destroy({
+            where: {
+                id: req.params.id
+            }
+        })
+        res.sendStatus(200);
     } catch (error) {
         res.status(500).send({
             message:
@@ -77,7 +99,7 @@ exports.deleteEmployee = async (req, res) => {
         });
     }
 }
-exports.updateEmployee = async (req, res) => {
+exports.updatePerson = async (req, res) => {
     if (!req.params.id) {
         res.status(400).send({
             message: "ID can not be empty!"
@@ -91,16 +113,31 @@ exports.updateEmployee = async (req, res) => {
         return;
     }
     try {
-        let employee = {
-            name: req.body.name,
-            surname: req.body.surname,
+        let person = {
+            CompanyId: req.body.id,
+            firstName: req.body.name,
+            lastName: req.body.surname,
+            middleName: req.body.middleName,
+            phoneNumber: req.body.phoneNumber,
+            email: req.body.email
+
         }
-        employee = await Employee.update(employee, {
+        person = await Person.update(person, {
             where: {
-                id : req.params.id
+                id: req.params.id
             }
         })
-        res.status(200).send(employee)
+        let employees = await Employee.findAll({
+            include: {
+                model: Person,
+                required: true,
+                where: {
+                    CompanyId: req.params.id,
+                    id: req.params.id
+                }
+            },
+        })
+        res.status(200).send(employees)
     } catch (error) {
         res.status(500).send({
             message:
@@ -108,3 +145,4 @@ exports.updateEmployee = async (req, res) => {
         });
     }
 }
+

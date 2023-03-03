@@ -8,11 +8,7 @@ const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
         allowNull: false,
         primaryKey: true
     },
-    documentNumber:{
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    documentName: {
+    invoiceNumber: {
         type: Sequelize.STRING,
         allowNull: false
     },
@@ -20,13 +16,21 @@ const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
         type: Sequelize.DATE,
         allowNull: false
     },
-    validTo: {
+    dueDate: {
         type: Sequelize.DATE,
         allowNull: false
     },
+    validTo: {
+        type: Sequelize.DATE,
+        allowNull: true
+    },
+    totalAmount: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     status: Sequelize.STRING,
-    typeOfDocument : Sequelize.STRING,
-    invoiceFile : Sequelize.BLOB
+    typeOfDocument: Sequelize.STRING,
+    invoiceFile: Sequelize.BLOB
 });
 
 module.exports = InvoiceOrQuote;

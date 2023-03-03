@@ -1,5 +1,5 @@
 const Category = require("../models/category");
-const Company = require("../models/company");
+
 
 exports.addCategory = async (req, res) => {
     if (!req.params.id) {
@@ -75,3 +75,34 @@ exports.deleteCategory = async (req, res) => {
     }
 }
 
+exports.updateCategory = async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            message: "ID can not be empty!"
+        });
+        return;
+    }
+    if (!req.body.name) {
+        res.status(400).send({
+            message: "Content can not be empty!"
+        });
+        return;
+    }
+    try {
+        let category = {
+            name: req.body.name,
+            description: req.body.description,
+        }
+        await Category.update(category, {
+            where: {
+                id: req.params.id
+            }
+        })
+        res.send({
+            message: "Category was updated successfully!"
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+}

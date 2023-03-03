@@ -11,7 +11,6 @@ router.post(
     "/api/auth/signup",
     [
         verifySignUp.checkDuplicateEmail,
-        verifySignUp.checkRolesExisted
     ],
     controller.signup
 );

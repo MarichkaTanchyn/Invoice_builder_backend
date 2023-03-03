@@ -8,17 +8,17 @@ const InvoiceOrQuoteDraft = sequelize.define('InvoiceOrQuoteDraft', {
         allowNull: false,
         primaryKey: true
     },
-    name: Sequelize.STRING,
+    invoiceNumber: Sequelize.STRING,
     creationDate: Sequelize.DATE,
+    dueDate: Sequelize.DATE,
     validTo: Sequelize.DATE,
     status: Sequelize.STRING,
-    documentNumber: Sequelize.STRING,
-    documentName: Sequelize.STRING,
     typeOfDocument : Sequelize.STRING,
     paymentMethod : Sequelize.STRING,
     bankAccount : Sequelize.STRING,
     currency: Sequelize.STRING,
-    paid : Sequelize.BOOLEAN
+    paid : Sequelize.BOOLEAN,
+    totalAmount: Sequelize.STRING,
 });
 
 module.exports = InvoiceOrQuoteDraft;

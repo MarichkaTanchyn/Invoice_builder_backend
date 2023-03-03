@@ -1,6 +1,4 @@
 const Company = require("../models/company");
-const {where} = require("sequelize");
-
 
 exports.getAllCompanies = async (req, res) => {
     try {
@@ -68,7 +66,12 @@ exports.updateCompany = async (req, res) => {
         return;
     }
     try {
-        let company = await Company.update(req.body, {
+        await Company.update(req.body, {
+            where: {
+                id : req.params.id
+            }
+        })
+        let company = await Company.findAll({
             where: {
                 id : req.params.id
             }
