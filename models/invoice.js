@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
 
-const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
+const Invoice = sequelize.define('Invoice', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -30,7 +30,7 @@ const InvoiceOrQuote = sequelize.define('InvoiceOrQuote', {
     },
     status: Sequelize.STRING,
     typeOfDocument: Sequelize.STRING,
-    invoiceFile: Sequelize.BLOB
+    invoiceFileLink: Sequelize.STRING
 });
 
-module.exports = InvoiceOrQuote;
+module.exports = Invoice;

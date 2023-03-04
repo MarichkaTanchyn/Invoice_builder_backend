@@ -22,6 +22,7 @@ const fileRoute = require('./routes/fileRoute');
 const authRoute = require('./routes/authRoute');
 const companyRoute = require('./routes/companyRoute');
 const employeeRoute = require('./routes/employeeRoute');
+const invoiceRoute = require('./routes/invoiceRoute');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -83,6 +84,7 @@ app.use(companyRoute);
 app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
+app.use(invoiceRoute);
 // app.use(errorController.get404);
 
 

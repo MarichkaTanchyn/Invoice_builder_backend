@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
 
-const InvoiceOrQuoteDraft = sequelize.define('InvoiceOrQuoteDraft', {
+const InvoiceDraft = sequelize.define('InvoiceDraft', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -21,4 +21,4 @@ const InvoiceOrQuoteDraft = sequelize.define('InvoiceOrQuoteDraft', {
     totalAmount: Sequelize.STRING,
 });
 
-module.exports = InvoiceOrQuoteDraft;
+module.exports = InvoiceDraft;

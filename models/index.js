@@ -10,8 +10,8 @@ db.role = require("./role");
 db.company = require("./company");
 db.person = require("./person");
 db.customer = require('./customer');
-db.invoice = require('./invoiceOrQuote');
-db.invoiceDraft = require('./invoiceOrQuoteDraft');
+db.invoice = require('./invoice');
+db.invoiceDraft = require('./invoiceDraft');
 db.category = require('./category');
 db.product = require('./product');
 
