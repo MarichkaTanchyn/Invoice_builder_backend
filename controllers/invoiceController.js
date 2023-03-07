@@ -1,20 +1,66 @@
 const Invoice = require('../models/invoice');
 const InvoiceDraft = require('../models/invoiceDraft');
+const Employee = require('../models/employee');
+const Person = require('../models/person');
 
 exports.getAllDocuments = async (req, res, next) => {
     try {
-        let invoice = await Invoice.findAll();
-        let invoiceDraft = await InvoiceDraft.findAll();
-        res.status(200).json({invoice, invoiceDraft});
+        const {CompanyId} = req.params;
+        if (!CompanyId) {
+            return res.status(400).send({
+                message: "Content can not be empty!"
+            });
+        }// Todo check have this employee permission to get all documents
+
+        const invoices = await Invoice.findAll({
+            include: [
+                {
+                    model: Employee,
+                    include: [
+                        {
+                            model: Person,
+                            where: {
+                                CompanyId,
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+        const drafts = await InvoiceDraft.findAll({
+            include: [
+                {
+                    model: Employee,
+                    include: [
+                        {
+                            model: Person,
+                            where: {
+                                CompanyId,
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const documents = [...invoices, ...drafts];
+
+        res.status(200).json({documents});
     } catch (error) {
+
         res.status(500).send({
-            message:
-                error.message || "Some error occurred while getting ALL DOCUMENTS"
+            message: error.message || "Some error occurred while retrieving documents."
         });
     }
 }
 
 exports.createInvoice = async (req, res, next) => {
+    if (!req.params.EmployeeId) {
+        res.status(400).send({
+            message: "Content can not be empty!"
+        });
+        return;
+    }
     try {
         let invoice = {
             invoiceNumber: req.body.invoiceNumber,
@@ -24,7 +70,8 @@ exports.createInvoice = async (req, res, next) => {
             totalAmount: req.body.totalAmount,
             status: req.body.status,
             typeOfDocument: req.body.typeOfDocument,
-            invoiceFileLink: req.body.invoiceFileLink
+            invoiceFileLink: req.body.invoiceFileLink,
+            EmployeeId: req.params.id
         }
         invoice = await Invoice.create(invoice, {validate: true});
         res.status(200).json({invoice});
@@ -36,6 +83,12 @@ exports.createInvoice = async (req, res, next) => {
     }
 }
 exports.createInvoiceDraft = async (req, res, next) => {
+    if (!req.params.EmployeeId) {
+        res.status(400).send({
+            message: "Content can not be empty!"
+        });
+        return;
+    }
     try {
         let invoiceDraft = {
             invoiceNumber: req.body.invoiceNumber,
@@ -49,7 +102,8 @@ exports.createInvoiceDraft = async (req, res, next) => {
             bankAccount: req.body.bankAccount,
             currency: req.body.currency,
             paid: req.body.paid,
-            invoiceFile: req.body.invoiceFile
+            invoiceFile: req.body.invoiceFile,
+            EmployeeId: req.params.id
         }
         invoiceDraft = await InvoiceDraft.create(invoiceDraft, {validate: true});
         res.status(200).json({invoiceDraft});
@@ -62,7 +116,7 @@ exports.createInvoiceDraft = async (req, res, next) => {
 }
 
 exports.getInvoice = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
@@ -71,7 +125,7 @@ exports.getInvoice = async (req, res, next) => {
     try {
         let invoice = await Invoice.findAll({
             where: {
-                id : req.params.id
+                id: req.params.InvoiceId
             }
         })
         res.status(200).send(invoice)
@@ -84,7 +138,7 @@ exports.getInvoice = async (req, res, next) => {
 }
 
 exports.getInvoiceDraft = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "Content can not be empty!"
         });
@@ -93,7 +147,7 @@ exports.getInvoiceDraft = async (req, res, next) => {
     try {
         let invoiceDraft = await InvoiceDraft.findAll({
             where: {
-                id : req.params.id
+                id: req.params.InvoiceId
             }
         })
         res.status(200).send(invoiceDraft)
@@ -106,7 +160,7 @@ exports.getInvoiceDraft = async (req, res, next) => {
 }
 
 exports.deleteInvoice = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -115,7 +169,7 @@ exports.deleteInvoice = async (req, res, next) => {
     try {
         let invoice = await Invoice.destroy({
             where: {
-                id : req.params.id
+                id: req.params.InvoiceId
             }
         })
         res.status(200).send(invoice)
@@ -128,7 +182,7 @@ exports.deleteInvoice = async (req, res, next) => {
 }
 
 exports.deleteInvoiceDraft = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -137,7 +191,7 @@ exports.deleteInvoiceDraft = async (req, res, next) => {
     try {
         let invoiceDraft = await InvoiceDraft.destroy({
             where: {
-                id : req.params.id
+                id: req.params.InvoiceId
             }
         })
         res.status(200).send(invoiceDraft)
@@ -150,7 +204,7 @@ exports.deleteInvoiceDraft = async (req, res, next) => {
 }
 
 exports.updateInvoice = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -168,7 +222,7 @@ exports.updateInvoice = async (req, res, next) => {
             invoiceFile: req.body.invoiceFile,
         }, {
             where: {
-                id : req.params.id
+                id: req.params.id
             }
         })
         res.status(200).send(invoice)
@@ -181,7 +235,7 @@ exports.updateInvoice = async (req, res, next) => {
 }
 
 exports.updateInvoiceDraft = async (req, res, next) => {
-    if (!req.params.id) {
+    if (!req.params.InvoiceId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -199,7 +253,7 @@ exports.updateInvoiceDraft = async (req, res, next) => {
             invoiceFile: req.body.invoiceFile
         }, {
             where: {
-                id : req.params.id
+                id: req.params.id
             }
         })
         res.status(200).send(invoiceDraft)
@@ -210,4 +264,3 @@ exports.updateInvoiceDraft = async (req, res, next) => {
         });
     }
 }
-

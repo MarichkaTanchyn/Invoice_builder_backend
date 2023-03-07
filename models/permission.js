@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 
 const sequelize = require('../util/database');
 
-const Role = sequelize.define("Role", {
+const Permission = sequelize.define("Permission", {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true
@@ -12,4 +12,4 @@ const Role = sequelize.define("Role", {
     }
 });
 
-module.exports = Role;
+module.exports = Permission;

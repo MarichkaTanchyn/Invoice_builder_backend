@@ -63,6 +63,7 @@ exports.addEmployee = async (req, res) => {
             email: req.body.email,
             password: bcrypt.hashSync(req.body.password, 8)
         }
+
         employee = await Employee.create(employee, {validate: true});
         res.send(employee);
     } catch (err) {
@@ -122,7 +123,7 @@ exports.updatePerson = async (req, res) => {
             email: req.body.email
 
         }
-        person = await Person.update(person, {
+        await Person.update(person, {
             where: {
                 id: req.params.id
             }

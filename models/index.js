@@ -6,7 +6,8 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.employee = require("./employee");
-db.role = require("./role");
+db.permission = require("./permission");
+db.employeePermission = require("./employeePermission");
 db.company = require("./company");
 db.person = require("./person");
 db.customer = require('./customer');
@@ -16,15 +17,15 @@ db.category = require('./category');
 db.product = require('./product');
 
 // ROLE & EMPLOYEE
-db.role.belongsToMany(db.employee, {
-    through: "employee_roles",
+db.permission.belongsToMany(db.employee, {
+    through: db.employeePermission ,
     foreignKey: "roleId",
     otherKey: "employeeId",
     onDelete: "cascade",
     hooks: true
 });
-db.employee.belongsToMany(db.role, {
-    through: "employee_roles",
+db.employee.belongsToMany(db.permission, {
+    through: db.employeePermission,
     foreignKey: "employeeId",
     otherKey: "roleId",
     onDelete: "cascade",
@@ -112,5 +113,5 @@ db.product.belongsToMany(db.invoice, {
 })
 
 
-db.ROLES = ["user", "admin"];//TODO: change to different
+db.PERMISSONS = ["user", "admin"];//TODO: change to different
 module.exports = db;

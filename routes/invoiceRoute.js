@@ -4,18 +4,22 @@ const invoiceController = require("../controllers/invoiceController");
 
 const router = express.Router();
 
-router.get("/getAllDocuments/:id", invoiceController.getAllDocuments);
+router.get("/getAllDocuments/:CompanyId", invoiceController.getAllDocuments);
 
-router.post("/createInvoice/:id", invoiceController.createInvoice);
+router.post("/createInvoice/:EmployeeId", invoiceController.createInvoice);
 
-router.post("/createInvoiceDraft/:id", invoiceController.createInvoiceDraft);
+router.post("/createInvoiceDraft/:EmployeeId", invoiceController.createInvoiceDraft);
 
-router.delete("/deleteInvoice/:companyId/:id", invoiceController.deleteInvoice);
+router.delete("/deleteInvoice/:InvoiceId", invoiceController.deleteInvoice);
 
-router.delete("/deleteInvoiceDraft/:companyId/:id", invoiceController.deleteInvoiceDraft);
+router.delete("/deleteInvoiceDraft/:InvoiceId", invoiceController.deleteInvoiceDraft);
 
-router.post("/updateInvoice/:id", invoiceController.updateInvoice);
+router.post("/updateInvoice/:InvoiceId", invoiceController.updateInvoice);
 
-router.post("/updateInvoiceDraft/:id", invoiceController.updateInvoiceDraft);
+router.post("/updateInvoiceDraft/:InvoiceId", invoiceController.updateInvoiceDraft);
+
+router.get("/getInvoice/:InvoiceId", invoiceController.getInvoice);
+
+router.get("/getInvoiceDraft/:InvoiceId", invoiceController.getInvoiceDraft);
 
 module.exports = router;

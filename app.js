@@ -6,7 +6,7 @@ const sequelize = require('./util/database');
 const bodyParser = require("body-parser");
 const multer = require('multer');
 const app = express();
-const Role = require('./models/role');
+const Permission = require('./models/permission');
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -50,18 +50,20 @@ app.use(bodyParser.json());
 //   console.log("Drop and re-sync db.");
 // });
 
-// function initial() {
-//     Role.create({
-//         id: 1,
-//         name: "user"
-//     });
-//
-//
-//     Role.create({
-//         id: 2,
-//         name: "admin"
-//     });
-// }
+function initial() {
+    Permission.create({
+        id: 1,
+        name: "All invoices access"
+    });
+    Permission.create({
+        id: 2,
+        name: "Category management"
+    });
+    Permission.create({
+        id: 3,
+        name: "Products management"
+    });
+}
 try {
     sequelize.authenticate();
     console.log('Connection has been established successfully.');
