@@ -44,24 +44,18 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json());
 
-// app.set('view engine', 'pug')
-// drop the table if it already exists
-// db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and re-sync db.");
-// });
-
 function initial() {
     Permission.create({
         id: 1,
-        name: "All invoices access"
+        name: "all_invoices_access"
     });
     Permission.create({
         id: 2,
-        name: "Category management"
+        name: "category_management"
     });
     Permission.create({
         id: 3,
-        name: "Products management"
+        name: "products_management"
     });
 }
 try {
@@ -87,7 +81,6 @@ app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
 app.use(invoiceRoute);
-// app.use(errorController.get404);
 
 
 

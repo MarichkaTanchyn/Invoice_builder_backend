@@ -1,11 +1,12 @@
 const db = require("../models");
 const config = require("../util/auth.js");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const Employee = db.employee;
 const Company = db.company;
 const Person = db.person;
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-
+const permissionOperations = require("../middleware/permissionCheck");
+const Permission = require("../models/permission");
 
 exports.signup = async (req, res) => {
     if (!req.body.password || !req.body.email || !req.body.firmName) {
@@ -34,10 +35,15 @@ exports.signup = async (req, res) => {
                 password: bcrypt.hashSync(req.body.password, 8)
             }
             employee = await Employee.create(employee, {validate: true});
+            await permissionOperations.setAllPermissions(employee.PersonId)
+            let permissions = await permissionOperations.getEmployeePermissions(employee.PersonId)
             res.send({
                 "company": company,
                 "person": person,
-                "employee": employee
+                "employee": [
+                    employee,
+                    permissions,
+                ]
             });
         } catch (error) {
             console.error(error);

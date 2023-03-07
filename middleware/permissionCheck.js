@@ -2,8 +2,7 @@ const Permission = require("../models/permission");
 const Employee = require("../models/employee");
 const EmployeePermission = require("../models/employeePermission");
 
-const hasPermission = async ({EmployeeId, permissionName}) => {
-
+const hasPermission = async (EmployeeId, permissionName) => {
     let permissionId = await Permission.findOne({
         where: {
             name: permissionName
@@ -19,6 +18,24 @@ const hasPermission = async ({EmployeeId, permissionName}) => {
         }
     });
     return employee.length !== 0;
+}
+
+const setAllPermissions = async (EmployeeId) => {
+    const permissionEnum = await Permission.findAll();
+    let employee = await Employee.findByPk(EmployeeId);
+    for (const permission of permissionEnum) {
+        await employee.addPermission(permission);
+    }
+}
+
+const getEmployeePermissions = async (EmployeeId) => {
+    let employee = await Employee.findByPk(EmployeeId);
+    return await employee.getPermissions({
+        attributes: ['id', 'name'],
+        through: {
+            attributes: []
+        }
+    });
 }
 
 const addPermission = async ({EmployeeId, permission}) => {
@@ -64,6 +81,8 @@ const permissionOperations = {
     hasPermission: hasPermission,
     addPermission: addPermission,
     removePermission: removePermission,
-    updatePermission: updatePermission
+    updatePermission: updatePermission,
+    setAllPermissions: setAllPermissions,
+    getEmployeePermissions: getEmployeePermissions
 };
 module.exports = permissionOperations;

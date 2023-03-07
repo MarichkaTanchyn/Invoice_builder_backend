@@ -1,6 +1,7 @@
 const Employee = require("../models/employee");
 const Person = require("../models/person");
-permissionOperations = require("../middleware/employeeRoleCheck");
+const Permission = require("../models/Permission");
+const permissionOperations = require("../middleware/permissionCheck");
 const bcrypt = require("bcryptjs");
 
 exports.getEmployeesInCompany = async (req, res) => {
@@ -12,13 +13,22 @@ exports.getEmployeesInCompany = async (req, res) => {
     }
     try {
         let employees = await Employee.findAll({
-            include: {
-                model: Person,
-                required: true,
-                where: {
-                    CompanyId: req.params.id
+            include: [
+                {
+                    model: Person,
+                    required: true,
+                    where: {
+                        CompanyId: req.params.id
+                    }
+                },
+                {
+                    model: Permission,
+                    attributes: ['id', 'name'],
+                    through: {
+                        attributes: []
+                    }
                 }
-            },
+            ]
         })
         res.status(200).send(employees)
     } catch (error) {

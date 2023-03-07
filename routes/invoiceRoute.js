@@ -4,7 +4,7 @@ const invoiceController = require("../controllers/invoiceController");
 
 const router = express.Router();
 
-router.get("/getAllDocuments/:CompanyId", invoiceController.getAllDocuments);
+router.get("/getAllDocuments/:CompanyId/:EmployeeId", invoiceController.getAllDocuments);
 
 router.post("/createInvoice/:EmployeeId", invoiceController.createInvoice);
 

@@ -2,52 +2,91 @@ const Invoice = require('../models/invoice');
 const InvoiceDraft = require('../models/invoiceDraft');
 const Employee = require('../models/employee');
 const Person = require('../models/person');
+const permissionOperations = require("../middleware/permissionCheck");
+
 
 exports.getAllDocuments = async (req, res, next) => {
     try {
-        const {CompanyId} = req.params;
-        if (!CompanyId) {
+        const {CompanyId, EmployeeId} = req.params;
+        if (!CompanyId || !EmployeeId) {
             return res.status(400).send({
                 message: "Content can not be empty!"
             });
-        }// Todo check have this employee permission to get all documents
-
-        const invoices = await Invoice.findAll({
-            include: [
-                {
-                    model: Employee,
-                    include: [
-                        {
-                            model: Person,
-                            where: {
-                                CompanyId,
+        }
+        let hasPermission = await permissionOperations.hasPermission(EmployeeId, "all_invoices_access")
+        let invoices, drafts;
+        if (hasPermission) {
+             invoices = await Invoice.findAll({
+                include: [
+                    {
+                        model: Employee,
+                        include: [
+                            {
+                                model: Person,
+                                where: {
+                                    CompanyId,
+                                }
                             }
-                        }
-                    ]
-                }
-            ]
-        });
-        const drafts = await InvoiceDraft.findAll({
-            include: [
-                {
-                    model: Employee,
-                    include: [
-                        {
-                            model: Person,
-                            where: {
-                                CompanyId,
+                        ]
+                    }
+                ]
+            });
+             drafts = await InvoiceDraft.findAll({
+                include: [
+                    {
+                        model: Employee,
+                        include: [
+                            {
+                                model: Person,
+                                where: {
+                                    CompanyId,
+                                }
                             }
-                        }
-                    ]
-                }
-            ]
-        });
-
+                        ]
+                    }
+                ]
+            });
+        } else {
+            invoices = await Invoice.findAll({
+                where: {
+                    EmployeeId
+                },
+                include: [
+                    {
+                        model: Employee,
+                        include: [
+                            {
+                                model: Person,
+                                where: {
+                                    CompanyId,
+                                }
+                            }
+                        ]
+                    }
+                ]
+            });
+            drafts = await InvoiceDraft.findAll({
+                where: {
+                    EmployeeId
+                },
+                include: [
+                    {
+                        model: Employee,
+                        include: [
+                            {
+                                model: Person,
+                                where: {
+                                    CompanyId,
+                                }
+                            }
+                        ]
+                    }
+                ]
+            });
+        }
         const documents = [...invoices, ...drafts];
-
         res.status(200).json({documents});
     } catch (error) {
-
         res.status(500).send({
             message: error.message || "Some error occurred while retrieving documents."
         });
