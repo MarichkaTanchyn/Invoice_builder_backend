@@ -1,5 +1,6 @@
 const Employee = require("../models/employee");
 const Person = require("../models/person");
+permissionOperations = require("../middleware/employeeRoleCheck");
 const bcrypt = require("bcryptjs");
 
 exports.getEmployeesInCompany = async (req, res) => {
@@ -63,8 +64,10 @@ exports.addEmployee = async (req, res) => {
             email: req.body.email,
             password: bcrypt.hashSync(req.body.password, 8)
         }
-
         employee = await Employee.create(employee, {validate: true});
+        if (req.body.permission) {
+            await permissionOperations.addPermission({EmployeeId: employee.id, permission: req.body.permission});
+        }
         res.send(employee);
     } catch (err) {
         res.status(500).send({
@@ -128,7 +131,7 @@ exports.updatePerson = async (req, res) => {
                 id: req.params.id
             }
         })
-        let employees = await Employee.findAll({
+        let employee = await Employee.findAll({
             include: {
                 model: Person,
                 required: true,
@@ -138,7 +141,10 @@ exports.updatePerson = async (req, res) => {
                 }
             },
         })
-        res.status(200).send(employees)
+        if (req.body.permission) {
+            await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
+        }
+        res.status(200).send(employee)
     } catch (error) {
         res.status(500).send({
             message:
