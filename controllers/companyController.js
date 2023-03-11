@@ -43,13 +43,12 @@ exports.deleteCompany = async (req, res) => {
         return;
     }
     try {
-        //TODO: cascade remove all the values with that company id, because now it is only deleting company Id prom other tables
         let company = await Company.destroy({
             where: {
                 id : req.params.id
             }
         })
-        res.status(200).send(company)
+        res.status(200).sendStatus(company)
     } catch (error) {
         res.status(500).send({
             message:

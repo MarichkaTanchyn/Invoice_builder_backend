@@ -13,8 +13,9 @@ exports.getAllDocuments = async (req, res, next) => {
                 message: "Content can not be empty!"
             });
         }
+
         let hasPermission = await permissionOperations.hasPermission(EmployeeId, "all_invoices_access")
-        let invoices, drafts;
+        let invoices, drafts, documents;
         if (hasPermission) {
              invoices = await Invoice.findAll({
                 include: [
@@ -46,6 +47,7 @@ exports.getAllDocuments = async (req, res, next) => {
                     }
                 ]
             });
+            documents = [...invoices, ...drafts];
         } else {
             invoices = await Invoice.findAll({
                 where: {
@@ -83,8 +85,8 @@ exports.getAllDocuments = async (req, res, next) => {
                     }
                 ]
             });
+            documents = [...invoices, ...drafts];
         }
-        const documents = [...invoices, ...drafts];
         res.status(200).json({documents});
     } catch (error) {
         res.status(500).send({

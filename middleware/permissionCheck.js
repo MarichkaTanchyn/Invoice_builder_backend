@@ -1,28 +1,31 @@
 const Permission = require("../models/permission");
 const Employee = require("../models/employee");
-const EmployeePermission = require("../models/employeePermission");
 
-const hasPermission = async (EmployeeId, permissionName) => {
-    let permissionId = await Permission.findOne({
-        where: {
-            name: permissionName
-        }
+const hasPermission = async (employeeId, permissionName) => {
+    const permission = await Permission.findOne({
+        where: {name: permissionName},
     });
-    let employee = await Employee.findAll({
-        where: {
-            model: EmployeePermission,
-            where: {
-                id: permissionId,
-                employeeId: EmployeeId
-            }
-        }
+    if (!permission) {
+        return false;
+    }
+    const employee = await Employee.findOne({
+        where: {id: employeeId},
+        include: [
+            {
+                model: Permission,
+                where: {id: permission.id},
+                through: {attributes: []},
+            },
+        ],
     });
     return employee.length !== 0;
-}
+};
 
 const setAllPermissions = async (EmployeeId) => {
     const permissionEnum = await Permission.findAll();
+
     let employee = await Employee.findByPk(EmployeeId);
+
     for (const permission of permissionEnum) {
         await employee.addPermission(permission);
     }
@@ -39,16 +42,17 @@ const getEmployeePermissions = async (EmployeeId) => {
 }
 
 const addPermission = async ({EmployeeId, permission}) => {
-    if (!EmployeeId || typeof EmployeeId !== "number") {
+
+    if (!EmployeeId) {
         throw new Error("Invalid employee ID");
     }
-    if (!permission || typeof permission !== "string") {
+    if (!permission) {
         throw new Error("Invalid permission");
     }
     let employee = await Employee.findByPk(EmployeeId);
 
     const permissions = await Permission.findAll({
-        where: { name: permission.split(",") },
+        where: {name: permission.split(",")},
     });
     if (permissions.length !== permission.split(",").length) {
         throw new Error("Invalid permissions");
@@ -62,16 +66,18 @@ const addPermission = async ({EmployeeId, permission}) => {
     }
 }
 
-const updatePermission = async ({EmployeeId, permissions}) => {
+const updatePermission = async ({EmployeeId, permission}) => {
     await deleteAllPermissions(EmployeeId);
-    await addPermission({EmployeeId, permissions});
+    await addPermission({EmployeeId, permission});
 }
 
 const deleteAllPermissions = async (EmployeeId) => {
-    const employee = await Employee.findByPk(EmployeeId.EmployeeId);
-    // Remove all permissions
+    const employee = await Employee.findByPk(EmployeeId);
+    const employeePermissions = await employee.getPermissions();
     try {
-        await employee.setPermissions([]);
+        if (employeePermissions.length !== 0) {
+            await employee.setPermissions([]);
+        }
     } catch (error) {
         console.error(error);
         throw new Error("Failed to delete permissions");
