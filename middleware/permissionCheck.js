@@ -42,23 +42,17 @@ const addPermission = async ({EmployeeId, permission}) => {
     if (!EmployeeId || typeof EmployeeId !== "number") {
         throw new Error("Invalid employee ID");
     }
-
     if (!permission || typeof permission !== "string") {
         throw new Error("Invalid permission");
     }
-    // Fetch employee by ID
     let employee = await Employee.findByPk(EmployeeId);
 
-    // Split permission names and fetch instances in a single query
     const permissions = await Permission.findAll({
         where: { name: permission.split(",") },
     });
-
-    // Check that all permissions were found
     if (permissions.length !== permission.split(",").length) {
         throw new Error("Invalid permissions");
     }
-
     // Add all permissions at once
     try {
         await employee.addPermissions(permissions);
@@ -68,44 +62,28 @@ const addPermission = async ({EmployeeId, permission}) => {
     }
 }
 
-const removePermission = async ({EmployeeId, permission}) => {
-    const permissionEnum = await Permission.findAll()
-    const permissionArr = permission.split(",");
-    let employee = await Employee.findByPk(EmployeeId);
-    for (const permission of permissionArr) {
-        if (permissionEnum.includes(permission)) {
-            await employee.removePermission(permission);
-        } else {
-            throw new Error("Permission not exists!")
-        }
-    }
+const updatePermission = async ({EmployeeId, permissions}) => {
+    await deleteAllPermissions(EmployeeId);
+    await addPermission({EmployeeId, permissions});
 }
 
-const updatePermission = async ({EmployeeId, permission}) => {
-    const permissionEnum = await Permission.findAll()
-    const permissionArr = permission.split(",");
-    let employee = await Employee.findByPk(EmployeeId);
-    for (const permission of permissionArr) {
-        if (permissionEnum.includes(permission)) {
-            await employee.setPermission(permission);
-        } else {
-            throw new Error("Permission not exists!")
-        }
+const deleteAllPermissions = async (EmployeeId) => {
+    const employee = await Employee.findByPk(EmployeeId.EmployeeId);
+    // Remove all permissions
+    try {
+        await employee.setPermissions([]);
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to delete permissions");
     }
-}
-
-const deletePermissions = async ({EmployeeId}) => {
-    let employee = await Employee.findByPk(EmployeeId);
-    await employee.removePermissions();
-}
+};
 
 const permissionOperations = {
     hasPermission: hasPermission,
     addPermission: addPermission,
-    removePermission: removePermission,
     updatePermission: updatePermission,
     setAllPermissions: setAllPermissions,
     getEmployeePermissions: getEmployeePermissions,
-    deletePermissions: deletePermissions
+    deleteAllPermissions: deleteAllPermissions
 };
 module.exports = permissionOperations;

@@ -152,10 +152,12 @@ exports.updatePerson = async (req, res) => {
                 }
             },
         })
-        if (req.body.permission) {
-            await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
-        } else if (req.body.permission === "none") {
-            await permissionOperations.deletePermissions({EmployeeId: req.params.id});
+        //TODO: decide do I need to send fro update all permission which person should have or only additional ones.
+        if (req.body.permission === "none") {
+            console.log("here")
+            await permissionOperations.deleteAllPermissions({EmployeeId: req.params.id});
+        } else if (req.body.permission) {
+            await permissionOperations.updatePermission({EmployeeId: req.params.id, permissions: req.body.permission});
         }
         res.status(200).send(employee)
     } catch (error) {
