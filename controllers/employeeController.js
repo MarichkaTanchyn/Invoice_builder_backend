@@ -76,6 +76,7 @@ exports.addEmployee = async (req, res) => {
         }
         employee = await Employee.create(employee, {validate: true});
         if (req.body.permission) {
+            console.log(req.body.permission)
             await permissionOperations.addPermission({EmployeeId: employee.id, permission: req.body.permission});
         }
         res.send(employee);
@@ -153,6 +154,8 @@ exports.updatePerson = async (req, res) => {
         })
         if (req.body.permission) {
             await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
+        } else if (req.body.permission === "none") {
+            await permissionOperations.deletePermissions({EmployeeId: req.params.id});
         }
         res.status(200).send(employee)
     } catch (error) {

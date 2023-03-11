@@ -39,15 +39,32 @@ const getEmployeePermissions = async (EmployeeId) => {
 }
 
 const addPermission = async ({EmployeeId, permission}) => {
-    const permissionEnum = await Permission.findAll();
-    const permissionArr = permission.split(",");
+    if (!EmployeeId || typeof EmployeeId !== "number") {
+        throw new Error("Invalid employee ID");
+    }
+
+    if (!permission || typeof permission !== "string") {
+        throw new Error("Invalid permission");
+    }
+    // Fetch employee by ID
     let employee = await Employee.findByPk(EmployeeId);
-    for (const permission of permissionArr) {
-        if (permissionEnum.includes(permission)) {
-            await employee.addPermission(permission);
-        } else {
-            throw new Error("Permission not exists!")
-        }
+
+    // Split permission names and fetch instances in a single query
+    const permissions = await Permission.findAll({
+        where: { name: permission.split(",") },
+    });
+
+    // Check that all permissions were found
+    if (permissions.length !== permission.split(",").length) {
+        throw new Error("Invalid permissions");
+    }
+
+    // Add all permissions at once
+    try {
+        await employee.addPermissions(permissions);
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to add permissions");
     }
 }
 
@@ -77,12 +94,18 @@ const updatePermission = async ({EmployeeId, permission}) => {
     }
 }
 
+const deletePermissions = async ({EmployeeId}) => {
+    let employee = await Employee.findByPk(EmployeeId);
+    await employee.removePermissions();
+}
+
 const permissionOperations = {
     hasPermission: hasPermission,
     addPermission: addPermission,
     removePermission: removePermission,
     updatePermission: updatePermission,
     setAllPermissions: setAllPermissions,
-    getEmployeePermissions: getEmployeePermissions
+    getEmployeePermissions: getEmployeePermissions,
+    deletePermissions: deletePermissions
 };
 module.exports = permissionOperations;
