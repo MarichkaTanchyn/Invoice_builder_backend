@@ -32,6 +32,14 @@ db.employee.belongsToMany(db.permission, {
     hooks: true
 });
 
+//COMPANY & INVOICE
+db.company.hasMany(db.invoice,{ onDelete: 'CASCADE', hooks: true });
+db.invoice.belongsTo(db.company);
+
+//COMPANY & INVOICE DRAFT
+db.company.hasMany(db.invoiceDraft,{ onDelete: 'CASCADE', hooks: true });
+db.invoiceDraft.belongsTo(db.company);
+
 // COMPANY & PERSON
 db.company.hasMany(db.person,{ onDelete: 'CASCADE', hooks: true });
 db.person.belongsTo(db.company);

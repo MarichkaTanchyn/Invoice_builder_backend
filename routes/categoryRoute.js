@@ -4,13 +4,13 @@ const categoryController = require("../controllers/categoryController");
 
 const router = express.Router();
 
-router.get("/getCategories/:id", categoryController.getCategories)
+router.get("/getCategories/:CompanyId", categoryController.getCategories)
 
-router.post("/addCategory/:id", categoryController.addCategory);
+router.post("/addCategory/:CompanyId", categoryController.addCategory);
 
-router.delete("/deleteCategory/:companyId/:id", categoryController.deleteCategory);
+router.delete("/deleteCategory/:CategoryId", categoryController.deleteCategory);
 
-router.post("/updateCategory/:id", categoryController.updateCategory);
+router.post("/updateCategory/:CategoryId", categoryController.updateCategory);
 
 module.exports = router;
 

@@ -18,7 +18,7 @@ const hasPermission = async (employeeId, permissionName) => {
             },
         ],
     });
-    return employee.length !== 0;
+    return employee !== null;
 };
 
 const setAllPermissions = async (EmployeeId) => {

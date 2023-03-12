@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.get("/getAllCompanies", companyController.getAllCompanies);
 
-router.get("/getCompany/:id", companyController.getCompany)
+router.get("/getCompany/:CompanyId", companyController.getCompany)
 
-router.delete("/deleteCompany/:id", companyController.deleteCompany);
+router.delete("/deleteCompany/:CompanyId", companyController.deleteCompany);
 
-router.post("/updateCompany/:id", companyController.updateCompany);
+router.post("/updateCompany/:CompanyId", companyController.updateCompany);
 
 module.exports = router;

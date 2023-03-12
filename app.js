@@ -23,6 +23,7 @@ const authRoute = require('./routes/authRoute');
 const companyRoute = require('./routes/companyRoute');
 const employeeRoute = require('./routes/employeeRoute');
 const invoiceRoute = require('./routes/invoiceRoute');
+const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -70,7 +71,7 @@ sequelize
     .sync()
     .then(cart => {
         app.listen(3000);
-        // initial()
+        initial()
     })
     .catch(err => {
         console.log(err);
@@ -81,6 +82,6 @@ app.use(categoryRoute);
 app.use(fileRoute);
 app.use(authRoute);
 app.use(invoiceRoute);
-
+app.use(invoiceDraftRoute);
 
 

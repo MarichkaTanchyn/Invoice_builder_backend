@@ -2,6 +2,7 @@ const Employee = require("../models/employee");
 const Person = require("../models/person");
 const Permission = require("../models/Permission");
 const permissionOperations = require("../middleware/permissionCheck");
+const IdVerifications = require("../middleware/idVerifications");
 const bcrypt = require("bcryptjs");
 
 exports.getEmployeesInCompany = async (req, res) => {
@@ -11,6 +12,7 @@ exports.getEmployeesInCompany = async (req, res) => {
         });
         return;
     }
+    await IdVerifications.companyExists({CompanyId: req.params.id});
     try {
         let employees = await Employee.findAll({
             include: [
@@ -52,6 +54,7 @@ exports.addEmployee = async (req, res) => {
         });
         return;
     }
+    await IdVerifications.companyExists({CompanyId: req.params.id});
     try {
         // let emailExists = Employee.findAll({where: {email: req.body.email}})
         // if (!emailExists.empty) {
@@ -88,32 +91,6 @@ exports.addEmployee = async (req, res) => {
     }
 }
 
-exports.deleteEmployee = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
-    try {
-        await Employee.destroy({
-            where: {
-                id: req.params.id
-            }
-        })
-        await Person.destroy({
-            where: {
-                id: req.params.id
-            }
-        })
-        res.sendStatus(200);
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while delete request"
-        });
-    }
-}
 exports.updatePerson = async (req, res) => {
     if (!req.params.id) {
         res.status(400).send({
@@ -127,6 +104,7 @@ exports.updatePerson = async (req, res) => {
         });
         return;
     }
+    await IdVerifications.userExists({EmployeeId: req.params.id});
     try {
         let person = {
             CompanyId: req.body.id,
@@ -167,3 +145,30 @@ exports.updatePerson = async (req, res) => {
     }
 }
 
+exports.deleteEmployee = async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            message: "ID can not be empty!"
+        });
+        return;
+    }
+    await IdVerifications.userExists({EmployeeId: req.params.id});
+    try {
+        await Employee.destroy({
+            where: {
+                id: req.params.id
+            }
+        })
+        await Person.destroy({
+            where: {
+                id: req.params.id
+            }
+        })
+        res.sendStatus(200);
+    } catch (error) {
+        res.status(500).send({
+            message:
+                error.message || "Some error occurred while delete request"
+        });
+    }
+}

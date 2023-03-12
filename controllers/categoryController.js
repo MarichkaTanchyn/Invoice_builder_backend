@@ -1,8 +1,8 @@
 const Category = require("../models/category");
-
+const IdVerifications = require("../middleware/idVerifications");
 
 exports.addCategory = async (req, res) => {
-    if (!req.params.id) {
+    if (!req.params.CompanyId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -14,11 +14,12 @@ exports.addCategory = async (req, res) => {
         });
         return;
     }
+    await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         let category = {
             name: req.body.name,
             description: req.body.description,
-            CompanyId: req.params.id
+            CompanyId: req.params.CompanyId
         }
         category = await Category.create(category)
         res.send(category);
@@ -32,17 +33,17 @@ exports.addCategory = async (req, res) => {
 
 
 exports.getCategories = async (req, res, next) => {
-    console.log(req.params.id)
-    if (!req.params.id) {
+    if (!req.params.CompanyId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
         return;
     }
+    await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         let categories = await Category.findAll({
             where: {
-                CompanyId : req.params.id
+                CompanyId : req.params.CompanyId
             }
         })
         res.setHeader('Content-Type', 'application/json');
@@ -54,17 +55,18 @@ exports.getCategories = async (req, res, next) => {
 };
 
 exports.deleteCategory = async (req, res) => {
-    if (!req.params.id, !req.params.companyId) {
+    if (!req.params.CategoryId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
         return;
     }
+    await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         await Category.destroy({
             where: {
                 id: req.params.id,
-                CompanyId: req.params.companyId
+                CompanyId: req.params.CategoryId
             }
         })
         res.send({
@@ -76,7 +78,7 @@ exports.deleteCategory = async (req, res) => {
 }
 
 exports.updateCategory = async (req, res) => {
-    if (!req.params.id) {
+    if (!req.params.CategoryId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
@@ -88,6 +90,7 @@ exports.updateCategory = async (req, res) => {
         });
         return;
     }
+    await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         let category = {
             name: req.body.name,
@@ -95,7 +98,7 @@ exports.updateCategory = async (req, res) => {
         }
         await Category.update(category, {
             where: {
-                id: req.params.id
+                id: req.params.CategoryId
             }
         })
         res.send({
