@@ -1,5 +1,7 @@
 const IdVerifications = require("../middleware/idVerifications");
 const InvoiceDraft = require("../models/invoiceDraft");
+const Employee = require("../models/employee");
+const Person = require("../models/person");
 
 exports.createInvoiceDraft = async (req, res, next) => {
     if (!req.params.EmployeeId) {
@@ -9,6 +11,15 @@ exports.createInvoiceDraft = async (req, res, next) => {
         return;
     }
     await IdVerifications.userExists({EmployeeId: req.params.EmployeeId});
+    let employee = await Employee.findAll({
+        include: {
+            model: Person,
+            required: true,
+            where: {
+                id: req.params.EmployeeId
+            }
+        },
+    });
     try {
         let invoiceDraft = {
             invoiceNumber: req.body.invoiceNumber,
@@ -23,7 +34,8 @@ exports.createInvoiceDraft = async (req, res, next) => {
             currency: req.body.currency,
             paid: req.body.paid,
             invoiceFile: req.body.invoiceFile,
-            EmployeeId: req.params.EmployeeId
+            EmployeeId: req.params.EmployeeId,
+            CompanyId: employee[0].Person.CompanyId,
         }
         invoiceDraft = await InvoiceDraft.create(invoiceDraft, {validate: true});
         res.status(200).json({invoiceDraft});
@@ -102,12 +114,12 @@ exports.deleteInvoiceDraft = async (req, res, next) => {
     }
     await IdVerifications.invoiceDraftExists({InvoiceId: req.params.InvoiceId});
     try {
-        let invoiceDraft = await InvoiceDraft.destroy({
+        await InvoiceDraft.destroy({
             where: {
                 id: req.params.InvoiceId
             }
         })
-        res.status(200).send(invoiceDraft)
+        res.sendStatus(200)
     } catch (error) {
         res.status(500).send({
             message:

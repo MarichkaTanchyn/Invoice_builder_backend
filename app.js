@@ -71,7 +71,7 @@ sequelize
     .sync()
     .then(cart => {
         app.listen(3000);
-        initial()
+        // initial()
     })
     .catch(err => {
         console.log(err);
