@@ -1,28 +1,49 @@
 const Category = require("../models/category");
 const IdVerifications = require("../middleware/idVerifications");
 
-exports.addCategory = async (req, res) => {
+exports.addCategories = async (req, res) => {
+
     if (!req.params.CompanyId) {
         res.status(400).send({
             message: "ID can not be empty!"
         });
         return;
     }
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
-    await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
+
+    console.log(req.params);
+    // await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
-        let category = {
-            name: req.body.name,
-            description: req.body.description,
-            CompanyId: req.params.CompanyId
+        const { withSubcategories, categories } = req.body;
+
+        // Create the categories and subcategories
+        if (withSubcategories) {
+            await Promise.all(categories.map(async (categoryData) => {
+                const category = await Category.create({
+                    name: categoryData.name,
+                    description: categoryData.description,
+                    CompanyId: req.params.CompanyId
+                });
+
+                if (categoryData.subcategories && categoryData.subcategories.length > 0) {
+                    await Promise.all(categoryData.subcategories.map(async (subcategoryData) => {
+                        await Category.create({
+                            name: subcategoryData.name,
+                            description: subcategoryData.description,
+                            parentId: category.id,
+                            CompanyId: req.params.CompanyId
+                        });
+                    }));
+                }
+            }));
+        } else {
+            await Category.bulkCreate(categories.map((categoryData) => ({
+                name: categoryData.name,
+                description: categoryData.description,
+                CompanyId: req.params.CompanyId
+            })));
         }
-        category = await Category.create(category)
-        res.send(category);
+        res.status(201).json({ message: 'Categories and subcategories created successfully.' });
+
     } catch (err) {
         res.status(500).send({
             message:

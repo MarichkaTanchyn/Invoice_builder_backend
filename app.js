@@ -1,7 +1,5 @@
 const path = require('path');
 const express = require('express');
-
-const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
 const bodyParser = require("body-parser");
 const multer = require('multer');
@@ -27,6 +25,8 @@ const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 
 
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
 app.use(
     multer({ storage: fileStorage }).single('file')
 );
@@ -40,7 +40,9 @@ app.use((req, res, next) => {
     );
     // TODO: factor out all sensitive data to env variables
     // TODO: Env variables can be called with process.env.NAME_OF_VARIABLE
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Add this line
+
     next();
 });
 app.use(bodyParser.json());
@@ -65,6 +67,7 @@ try {
 } catch (error) {
     console.error('Unable to connect to the database:', error);
 }
+
 
 sequelize
     // .sync({ force: true })

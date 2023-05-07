@@ -7,7 +7,7 @@ db.sequelize = sequelize;
 
 db.employee = require("./employee");
 db.permission = require("./permission");
-db.employeePermission = require("./employeePermission");
+// db.employeePermission = require("./employeePermission");
 db.company = require("./company");
 db.person = require("./person");
 db.customer = require('./customer');
@@ -18,14 +18,16 @@ db.product = require('./product');
 
 // ROLE & EMPLOYEE
 db.permission.belongsToMany(db.employee, {
-    through: db.employeePermission ,
+    through: "EmployeePermissions",
+    primaryKey: "roleId",
     foreignKey: "roleId",
     otherKey: "employeeId",
     onDelete: "cascade",
     hooks: true
 });
 db.employee.belongsToMany(db.permission, {
-    through: db.employeePermission,
+    through: "EmployeePermissions",
+    primaryKey: "employeeId",
     foreignKey: "employeeId",
     otherKey: "roleId",
     onDelete: "cascade",
@@ -33,23 +35,23 @@ db.employee.belongsToMany(db.permission, {
 });
 
 //COMPANY & INVOICE
-db.company.hasMany(db.invoice,{ onDelete: 'CASCADE', hooks: true });
+db.company.hasMany(db.invoice, {onDelete: 'CASCADE', hooks: true});
 db.invoice.belongsTo(db.company);
 
 //COMPANY & INVOICE DRAFT
-db.company.hasMany(db.invoiceDraft,{ onDelete: 'CASCADE', hooks: true });
+db.company.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
 db.invoiceDraft.belongsTo(db.company);
 
 // COMPANY & PERSON
-db.company.hasMany(db.person,{ onDelete: 'CASCADE', hooks: true });
+db.company.hasMany(db.person, {onDelete: 'CASCADE', hooks: true});
 db.person.belongsTo(db.company);
 
 // EMPLOYEE & PERSON
-db.person.hasOne(db.employee,{ onDelete: 'CASCADE', hooks: true });
+db.person.hasOne(db.employee, {onDelete: 'CASCADE', hooks: true});
 db.employee.belongsTo(db.person);
 
 // PERSON & CUSTOMER
-db.person.hasMany(db.customer,{ onDelete: 'CASCADE', hooks: true });
+db.person.hasMany(db.customer, {onDelete: 'CASCADE', hooks: true});
 db.customer.belongsTo(db.person);
 
 // COMPANY & CUSTOMER
@@ -60,7 +62,7 @@ db.company.belongsToMany(db.customer, {
     onDelete: "cascade",
     hooks: true
 });
-db.customer.belongsToMany(db.company,{
+db.customer.belongsToMany(db.company, {
     through: "company_customers",
     foreignKey: "customerId",
     otherKey: "companyId",
@@ -69,19 +71,20 @@ db.customer.belongsToMany(db.company,{
 });
 
 // CATEGORY TO CATEGORY
-db.category.hasMany(db.category);
-db.category.hasOne(db.category);
+db.category.hasMany(db.category, { as: 'subCategories', foreignKey: 'parentId' });
+db.category.belongsTo(db.category, { as: 'parent', foreignKey: 'parentId' });
+
 
 // CATEGORY & COMPANY
-db.company.hasMany(db.category,{ onDelete: 'CASCADE', hooks: true });
+db.company.hasMany(db.category, {onDelete: 'CASCADE', hooks: true});
 db.category.belongsTo(db.company);
 
 //CATEGORY & PRODUCT
-db.category.hasMany(db.product,{ onDelete: 'CASCADE', hooks: true });
+db.category.hasMany(db.product, {onDelete: 'CASCADE', hooks: true});
 db.product.belongsTo(db.category);
 
 // INVOICE & EMPLOYEE
-db.employee.hasMany(db.invoice,{ onDelete: 'CASCADE', hooks: true });
+db.employee.hasMany(db.invoice, {onDelete: 'CASCADE', hooks: true});
 db.invoice.belongsTo(db.employee);
 
 // INVOICE & PRODUCT
@@ -101,7 +104,7 @@ db.product.belongsToMany(db.invoice, {
 },)
 
 // INVOICE DRAFT & EMPLOYEE
-db.employee.hasMany(db.invoiceDraft,{ onDelete: 'CASCADE', hooks: true });
+db.employee.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
 db.invoiceDraft.belongsTo(db.employee);
 
 //INVOICE DRAFT & PRODUCT
