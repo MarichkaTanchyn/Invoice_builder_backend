@@ -19,7 +19,6 @@ const Product = sequelize.define('Product', {
         allowNull: false
     },
     other:  Sequelize.JSONB
-//spisok kolonok kotorye obezetelnye i czekat w jsone jest li oni
 });
 
 module.exports = Product;
