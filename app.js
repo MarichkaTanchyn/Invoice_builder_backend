@@ -5,15 +5,8 @@ const bodyParser = require("body-parser");
 const multer = require('multer');
 const app = express();
 const Permission = require('./models/permission');
+const cors = require('cors');
 
-const fileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'files');
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    }
-});
 
 const categoryRoute = require('./routes/categoryRoute');
 const fileRoute = require('./routes/fileRoute');
@@ -23,29 +16,14 @@ const employeeRoute = require('./routes/employeeRoute');
 const invoiceRoute = require('./routes/invoiceRoute');
 const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 
-
-app.use(bodyParser.urlencoded({extended: false}));
+// Parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: false }));
+// Parse JSON bodies
 app.use(bodyParser.json());
 
-app.use(
-    multer({ storage: fileStorage }).single('file')
-);
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/files', express.static(path.join(__dirname, 'files')));
-
-app.use((req, res, next) => {
-    res.header(
-        "Access-Control-Allow-Headers",
-        "x-access-token, Origin, Content-Type, Accept"
-    );
-    // TODO: factor out all sensitive data to env variables
-    // TODO: Env variables can be called with process.env.NAME_OF_VARIABLE
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3001");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Add this line
-
-    next();
-});
-app.use(bodyParser.json());
+app.use(cors({
+    origin: 'http://localhost:3001'
+}));
 
 function initial() {
     Permission.create({
@@ -79,6 +57,8 @@ sequelize
     .catch(err => {
         console.log(err);
     });
+
+
 app.use(employeeRoute);
 app.use(companyRoute);
 app.use(categoryRoute);
@@ -86,5 +66,3 @@ app.use(fileRoute);
 app.use(authRoute);
 app.use(invoiceRoute);
 app.use(invoiceDraftRoute);
-
-

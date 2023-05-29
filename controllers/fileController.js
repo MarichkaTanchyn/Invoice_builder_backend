@@ -1,22 +1,23 @@
 const readFile = require('../middleware/readExcel');
 
-// this gets csv file and send headers as response
 
-exports.postFile = (req, res, next) => {
-    console.log(req.file);
-    if (!req.file) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
+exports.uploadFile = (req, res, next) => {
+    if (!req.params.CompanyId) {
+        res.status(400).json({ message: 'No CompanyId' });
         return;
     }
-    const file = req.file;
 
-    let result = readFile.readFile(file.path);
-    const data = result[0],
-         headers = result[1];
-
-    res.send(headers);
+    if (!req.file ) {
+        res.status(400).json({ message: 'No file uploaded' });
+        return;
+    }
+    try {
+        const fileId = req.file.filename;  // multer automatically generates a unique filename
+        res.send(fileId);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 }
 
 
