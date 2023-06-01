@@ -15,6 +15,7 @@ const companyRoute = require('./routes/companyRoute');
 const employeeRoute = require('./routes/employeeRoute');
 const invoiceRoute = require('./routes/invoiceRoute');
 const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
+const csvRoute = require('./routes/csvRoute');
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -66,3 +67,4 @@ app.use(fileRoute);
 app.use(authRoute);
 app.use(invoiceRoute);
 app.use(invoiceDraftRoute);
+app.use(csvRoute);
