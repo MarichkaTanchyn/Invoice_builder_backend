@@ -43,8 +43,19 @@ exports.preprocessData = async (req, res, next) => {
     }
 
     for (let key in req.body) {
-        // if it contains a originalSheetName then it is -> create new category from sheet
+
+        // if it contains a categoryName then it is -> create new category from sheet
+        // structure :
+        // SheetName : [
+        // columns[{column: 'Category1', originalColumn: 'Category1', useInInvoice: false, dataType: 'number'}],
+        // categoryName: "Second"
+        // ]
+
         // else it is upload products to category
+        //structure :
+        //SheetName : [
+        //{column: 'Category1', originalColumn: 'Category1', useInInvoice: false, dataType: 'number'}
+        // ]
     }
 
     try {
