@@ -26,15 +26,15 @@ exports.readDataFromExcelSheet = async (data, headersRow, sheetName) => {
     let columns = [];
     for (const key in jsonData[0]) {
         if (jsonData[0].hasOwnProperty(key)) {
-            const columnData = jsonData.map(row => row[key]);
-            const dataType = guessDataType(columnData);
-            if (dataType === 'name') {
-                hasGuessedName = true;
-            }
-            if (dataType === 'price') {
-                hasGuessedPrice = true;
-            }
-            columns.push({"column": key, "dataType": dataType});
+            // const columnData = jsonData.map(row => row[key]);
+            // const dataType = guessDataType(columnData);
+            // if (dataType === 'name') {
+            //     hasGuessedName = true;
+            // }
+            // if (dataType === 'price') {
+            //     hasGuessedPrice = true;
+            // }
+            columns.push({"column": key});
         }
     }
     mySheetData[sheetName] = columns;

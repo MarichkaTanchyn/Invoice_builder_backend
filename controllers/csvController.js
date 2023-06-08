@@ -29,3 +29,29 @@ exports.readExcel = async (req, res, next) => {
         res.status(500).json({message: 'Internal Server Error'});
     }
 }
+
+exports.preprocessData = async (req, res, next) => {
+
+    if (!req.params.fileKey) {
+        res.status(400).json({message: 'No fileKey'});
+        return;
+    }
+
+    if (!req.body) {
+        res.status(400).json({message: 'No body'});
+        return;
+    }
+
+    for (let key in req.body) {
+        // if it contains a originalSheetName then it is -> create new category from sheet
+        // else it is upload products to category
+    }
+
+    try {
+
+    } catch (err) {
+
+    }
+
+    // got data edited by the user, change needed columns names or smth else, then check data fromat and push to database
+}
