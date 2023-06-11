@@ -1,6 +1,6 @@
 const {join} = require("path");
 const fs = require('fs').promises;
-const {readDataFromExcelSheet} = require("../middleware/readExcel");
+const {readDataFromExcelSheet, processSheetData, processSheetDataForCategory} = require("../middleware/readExcel");
 
 exports.readExcel = async (req, res, next) => {
     if (!req.params.fileKey) {
@@ -30,8 +30,7 @@ exports.readExcel = async (req, res, next) => {
     }
 }
 
-exports.preprocessData = async (req, res, next) => {
-
+exports.preprocessSelectedSheetData = async (req, res, next) => {
     if (!req.params.fileKey) {
         res.status(400).json({message: 'No fileKey'});
         return;
@@ -42,27 +41,34 @@ exports.preprocessData = async (req, res, next) => {
         return;
     }
 
-    for (let key in req.body) {
-
-        // if it contains a categoryName then it is -> create new category from sheet
-        // structure :
-        // SheetName : [
-        // columns[{column: 'Category1', originalColumn: 'Category1', useInInvoice: false, dataType: 'number'}],
-        // categoryName: "Second"
-        // ]
-
-        // else it is upload products to category
-        //structure :
-        //SheetName : [
-        //{column: 'Category1', originalColumn: 'Category1', useInInvoice: false, dataType: 'number'}
-        // ]
-    }
+    const fileHeaders = req.body.data;
+    const fileId = req.params.fileKey;
 
     try {
-
+        const data = await processSheetData(fileId, fileHeaders);
     } catch (err) {
+    }
+}
 
+exports.createNewCategoryFromSheet = async (req, res, next) => {
+    if (!req.params.fileKey) {
+        res.status(400).json({message: 'No fileKey'});
+        return;
     }
 
-    // got data edited by the user, change needed columns names or smth else, then check data fromat and push to database
+    if (!req.body) {
+        res.status(400).json({message: 'No body'});
+        return;
+    }
+
+    const fileHeaders = req.body.data;
+    const fileId = req.params.fileKey;
+
+    try {
+        const categories = await processSheetDataForCategory(fileId, fileHeaders);
+
+        // console.log(categories)
+    } catch (err) {
+    }
+
 }

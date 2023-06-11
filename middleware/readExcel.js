@@ -1,7 +1,11 @@
 const XLSX = require('xlsx');
+const fs = require('fs').promises;
+const {join} = require('path');
 
 let hasGuessedName = false;
 let hasGuessedPrice = false;
+
+
 exports.readDataFromExcelSheet = async (data, headersRow, sheetName) => {
     const wb = XLSX.read(data, {type: 'buffer'});
 
@@ -116,4 +120,78 @@ const guessDataType = (columnData) => {
         }
     }
     return guessedType;
+}
+
+exports.processSheetData = async (fileKey, fileHeaders) => {
+    const file = join(__dirname, '..', 'uploads', fileKey);
+    const bufferedFile = await fs.readFile(file);
+    let data = [];
+
+    const workbook = XLSX.read(bufferedFile, {type: 'buffer'});
+
+    for (let sheetName in fileHeaders) {
+        const worksheet = workbook.Sheets[sheetName];
+        if (worksheet) {
+
+            //TODO: get header from ui
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            // Assume that the first row is the header
+            let headers = jsonData.shift();
+
+            const modifiedData = jsonData.map(row => {
+                let obj = {};
+                row.forEach((cell, index) => {
+                    const originalColName = headers[index];
+                    const newHeader = fileHeaders[sheetName].find(h => h.originalColName === originalColName);
+                    const colName = newHeader ? newHeader.column : originalColName;
+                    obj[colName] = cell;
+                });
+                return obj;
+            });
+
+            data.push(modifiedData);
+        }
+    }
+
+    return data;
+}
+
+exports.processSheetDataForCategory = async (fileKey, fileHeaders) => {
+    const file = join(__dirname, '..', 'uploads', fileKey);
+    const bufferedFile = await fs.readFile(file);
+
+    let categories = {};
+
+    // Read the file using xlsx
+    const workbook = XLSX.read(bufferedFile, {type: 'buffer'});
+
+    console.log(fileHeaders)
+    for (let sheetName in fileHeaders) {
+        const worksheet = workbook.Sheets[sheetName];
+        if (worksheet) {
+            //TODO: get header from ui
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+            // Assume that the first row is the header
+            let headers = jsonData.shift();
+
+            const modifiedData = jsonData.map(row => {
+                let obj = {};
+                row.forEach((cell, index) => {
+                    const originalColName = headers[index];
+                    const newHeader = fileHeaders[sheetName][0].columns.find(h => h.originalColumn === originalColName);
+                    const colName = newHeader ? newHeader.column : originalColName;
+                    obj[colName] = cell;
+                });
+                return obj;
+            });
+
+            // Use categoryName as the key instead of sheetName
+            const categoryName = fileHeaders[sheetName][0].categoryName;
+            if (categoryName) {
+                categories[categoryName] = modifiedData;
+            }
+        }
+    }
+    return categories;
 }

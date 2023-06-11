@@ -1,0 +1,18 @@
+version: '3'
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: excelTry
+      POSTGRES_USER: maria
+      POSTGRES_PASSWORD: sa
+    volumes:
+      - ./data:/var/lib/postgresql/data
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
