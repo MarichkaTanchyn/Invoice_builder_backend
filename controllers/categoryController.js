@@ -86,10 +86,10 @@ exports.deleteCategory = async (req, res) => {
     try {
         await Category.destroy({
             where: {
-                id: req.params.id,
-                CompanyId: req.params.CategoryId
+                id: req.params.CategoryId,
             }
         })
+        
         res.send({
             message: "Category was deleted successfully!"
         });

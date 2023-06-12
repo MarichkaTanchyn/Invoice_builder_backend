@@ -1,9 +1,10 @@
 const Employee = require("../models/employee");
 const Person = require("../models/person");
-const Permission = require("../models/Permission");
+const Permission = require("../models/permission");
 const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
 const bcrypt = require("bcryptjs");
+
 
 exports.getEmployeesInCompany = async (req, res) => {
     if (!req.params.id) {
