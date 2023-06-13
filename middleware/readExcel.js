@@ -270,3 +270,25 @@ exports.validateAllSheetsData = async (fileKey, fileHeaders) => {
   // If all cells are valid, return null
   return null;
 };
+
+exports.prepareProductData = (productData) => {
+  let product = {other: {}};
+  let usedKeys = {name: false, price: false, description: false};
+
+  productData.forEach(item => {
+    let keys = Object.keys(item);
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      let value = item[key];
+
+      if (['name', 'price', 'description'].includes(value.type) && (!usedKeys[value.type] || value.useInInvoice)) {
+        product[value.type] = key;
+        usedKeys[value.type] = true;
+      } else {
+        product.other[key] = value;
+      }
+    }
+  });
+
+  return product;
+}

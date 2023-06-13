@@ -1,8 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
 
-const Category = require('./category')
-
 const Product = sequelize.define('Product', {
     id: {
         type: Sequelize.INTEGER,
@@ -16,6 +14,10 @@ const Product = sequelize.define('Product', {
     },
     price: {
        type: Sequelize.DECIMAL,
+        allowNull: false
+    },
+    description: {
+        type: Sequelize.STRING,
         allowNull: false
     },
     other:  Sequelize.JSONB

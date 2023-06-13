@@ -1,11 +1,13 @@
 const { join } = require("path");
 const fs = require("fs").promises;
+const Product = require("../models/product");
 const {
   readDataFromExcelSheet,
   processSheetData,
   processSheetDataForCategory,
   validateSheetData,
   validateAllSheetsData,
+  prepareProductData
 } = require("../middleware/readExcel");
 
 exports.readExcel = async (req, res, next) => {
@@ -66,6 +68,12 @@ exports.preprocessSelectedSheetData = async (req, res, next) => {
 
     const data = await processSheetData(fileId, fileHeaders);
     console.log(data);
+    const products = data.map(productData => prepareProductData(productData));
+
+    const savedProducts = await Product.bulkCreate(products);
+    console.log(savedProducts);
+
+
     res.send(data);
   } catch (err) {
     console.error(err);
