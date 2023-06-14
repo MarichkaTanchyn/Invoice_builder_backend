@@ -60,7 +60,7 @@ exports.deleteProduct = async (req, res) => {
     });
     return;
   }
-//   await IdVerifications.productExists({ ProductId: req.params.ProductId });
+  // await IdVerifications.productExists({ ProductId: req.params.ProductId });
   try {
     await Product.destroy({
       where: {
