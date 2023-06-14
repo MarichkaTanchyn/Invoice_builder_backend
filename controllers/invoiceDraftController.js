@@ -2,20 +2,14 @@ const IdVerifications = require("../middleware/idVerifications");
 const InvoiceDraft = require("../models/invoiceDraft");
 const Employee = require("../models/employee");
 const Person = require("../models/person");
+const validateRequest = require("../middleware/validateRequest");
 
-exports.createInvoiceDraft = async (req, res, next) => {
-    if (!req.params.EmployeeId) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.createInvoiceDraft = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
+
     await IdVerifications.userExists({EmployeeId: req.params.EmployeeId});
     let employee = await Employee.findAll({
         include: {
-            model: Person,
-            required: true,
-            where: {
+            model: Person, required: true, where: {
                 id: req.params.EmployeeId
             }
         },
@@ -39,22 +33,14 @@ exports.createInvoiceDraft = async (req, res, next) => {
         }
         invoiceDraft = await InvoiceDraft.create(invoiceDraft, {validate: true});
         res.status(200).json({invoiceDraft});
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while creating INVOICE DRAFT"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
 
-exports.getInvoiceDraft = async (req, res, next) => {
-    if (!req.params.InvoiceId) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.getInvoiceDraft = [validateRequest(['InvoiceId'], []), async (req, res, next) => {
+
     await IdVerifications.invoiceDraftExists({InvoiceId: req.params.InvoiceId});
     try {
         let invoiceDraft = await InvoiceDraft.findAll({
@@ -63,22 +49,13 @@ exports.getInvoiceDraft = async (req, res, next) => {
             }
         })
         res.status(200).send(invoiceDraft)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while get request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
 
-exports.updateInvoiceDraft = async (req, res, next) => {
-    if (!req.params.InvoiceId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.updateInvoiceDraft = [validateRequest(['InvoiceId'], []), async (req, res, next) => {
     await IdVerifications.invoiceDraftExists({InvoiceId: req.params.InvoiceId});
     try {
         let invoiceDraft = await InvoiceDraft.update({
@@ -96,22 +73,14 @@ exports.updateInvoiceDraft = async (req, res, next) => {
             }
         })
         res.status(200).send(invoiceDraft)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while update request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
 
-exports.deleteInvoiceDraft = async (req, res, next) => {
-    if (!req.params.InvoiceId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.deleteInvoiceDraft = [validateRequest(['InvoiceId'], []), async (req, res, next) => {
+
     await IdVerifications.invoiceDraftExists({InvoiceId: req.params.InvoiceId});
     try {
         await InvoiceDraft.destroy({
@@ -120,10 +89,7 @@ exports.deleteInvoiceDraft = async (req, res, next) => {
             }
         })
         res.sendStatus(200)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while delete request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]

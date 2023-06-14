@@ -1,89 +1,63 @@
 const Company = require("../models/company");
 const IdVerifications = require("../middleware/idVerifications");
+const validateRequest = require('../middleware/validateRequest');
 
-exports.getAllCompanies = async (req, res) => {
+
+exports.getAllCompanies = async (req, res, next) => {
     try {
         let companies = await Company.findAll();
         res.status(200).json({companies});
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while getting ALL COMPANIES"
-        });
+    } catch (err) {
+        next(err);
     }
 }
 
-exports.getCompany = async (req, res) => {
-    if (!req.params.CompanyId) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.getCompany = [validateRequest(['CompanyId'], []), async (req, res, next) => {
+
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
-       let company = await Company.findAll({
+        let company = await Company.findAll({
             where: {
-                id : req.params.CompanyId
+                id: req.params.CompanyId
             }
         })
         res.status(200).send(company)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while get request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
-exports.updateCompany = async (req, res) => {
-    if (!req.params.CompanyId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.updateCompany = [validateRequest(['CompanyId'], []), async (req, res, next) => {
+
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         await Company.update(req.body, {
             where: {
-                id : req.params.CompanyId
+                id: req.params.CompanyId
             }
         })
         let company = await Company.findAll({
             where: {
-                id : req.params.CompanyId
+                id: req.params.CompanyId
             }
         })
         res.status(200).send(company)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while update request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
-exports.deleteCompany = async (req, res) => {
-    if (!req.params.CompanyId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.deleteCompany = [validateRequest(['CompanyId'], []), async (req, res, next) => {
+
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         let company = await Company.destroy({
             where: {
-                id : req.params.CompanyId
+                id: req.params.CompanyId
             }
         })
         res.status(200).sendStatus(company)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while delete request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
-
+}]

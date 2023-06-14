@@ -7,14 +7,9 @@ const Company = db.company;
 const Person = db.person;
 const permissionOperations = require("../middleware/permissionCheck");
 const Permission = require("../models/permission");
+const validateRequest = require('../middleware/validateRequest');
 
-exports.signup = async (req, res) => {
-    if (!req.body.password || !req.body.email || !req.body.firmName) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
 
     if (req.body.token) {
         //TODO register a new user to existed company
@@ -25,54 +20,41 @@ exports.signup = async (req, res) => {
             }
             company = await Company.create(company, {validate: true});
             let person = {
-                CompanyId: company.id,
-                email: req.body.email
+                CompanyId: company.id, email: req.body.email
             }
             person = await Person.create(person, {validate: true});
             let employee = {
-                PersonId: person.id,
-                email: req.body.email,
-                password: bcrypt.hashSync(req.body.password, 8)
+                PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
             }
             employee = await Employee.create(employee, {validate: true});
             await permissionOperations.setAllPermissions(employee.PersonId)
             let permissions = await permissionOperations.getEmployeePermissions(employee.PersonId)
             res.send({
-                "company": company,
-                "person": person,
-                "employee": [
-                    employee,
-                    permissions,
-                ]
+                "company": company, "person": person, "employee": [employee, permissions,]
             });
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            next(err);
         }
     }
-};
+}];
 
 
 exports.signIn = async (req, res) => {
     console.log(req.body)
     let employee = await Employee.findOne({
-            where: {
-                username: req.body.username
-            }
+        where: {
+            username: req.body.username
         }
-    );
+    });
 
     console.log(employee);
     if (!employee) {
         return res.status(404).send({message: "Employee Not found."});
     }
-    let passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        employee.password
-    );
+    let passwordIsValid = bcrypt.compareSync(req.body.password, employee.password);
     if (!passwordIsValid) {
         return res.status(401).send({
-            accessToken: null,
-            message: "Invalid Password!"
+            accessToken: null, message: "Invalid Password!"
         });
     }
     let token = jwt.sign({id: employee.id}, config.secret, {
@@ -85,11 +67,6 @@ exports.signIn = async (req, res) => {
         authorities.push("ROLE_" + roles[i].name.toUpperCase());
     }
     res.status(200).send({
-        id: employee.id,
-        email: employee.email,
-        roles: authorities,
-        accessToken: token
+        id: employee.id, email: employee.email, roles: authorities, accessToken: token
     });
-
-
 };

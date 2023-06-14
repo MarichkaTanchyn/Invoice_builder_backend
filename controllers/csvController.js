@@ -1,11 +1,9 @@
-const {join} = require("path");
-const fs = require("fs").promises;
 const Product = require("../models/product");
 const Category = require("../models/category");
 const IdVerifications = require("../middleware/idVerifications");
 
 const {
-    readDataFromExcelSheet,
+    processData,
     processSheetData,
     processSheetDataForCategory,
     validateSheetData,
@@ -13,54 +11,30 @@ const {
     prepareProductData,
 } = require("../middleware/readExcel");
 
-exports.readExcel = async (req, res, next) => {
-    if (!req.params.fileKey) {
-        res.status(400).json({message: "No fileKey"});
-        return;
-    }
-    if (!req.body) {
-        res.status(400).json({message: "No body"});
-        return;
-    }
+const validateRequestBody = require('../middleware/validateRequestBody');
+const validateRequest = require('../middleware/validateRequest');
+
+exports.readExcel = [validateRequestBody, validateRequest(['fileKey'], []), async (req, res, next) => {
     try {
         const sheetHeaderJson = req.body;
         const fileId = req.params.fileKey;
-        const file = join(__dirname, "..", "uploads", fileId);
-        const bufferedFile = await fs.readFile(file);
 
-        let data = [];
-        for (let key in sheetHeaderJson) {
-            const sheetData = await readDataFromExcelSheet(bufferedFile, sheetHeaderJson[key], key);
-            data.push(sheetData);
-        }
+        const data = await Promise.all(Object.entries(sheetHeaderJson).map(([key, value]) => processData(fileId, value, key)));
+
         res.send(data);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({message: "Internal Server Error"});
+        next(err);
     }
-};
+}];
 
-exports.preprocessSelectedSheetData = async (req, res, next) => {
-    if (!req.params.fileKey) {
-        res.status(400).json({message: "No fileKey"});
-        return;
-    }
-
-    if (!req.body) {
-        res.status(400).json({message: "No body"});
-        return;
-    }
-
+exports.preprocessSelectedSheetData = [validateRequestBody, validateRequest(['fileKey'], []), async (req, res, next) => {
     try {
-        const fileHeaders = req.body.data;
-        const categoryId = req.body.categoryId;
+        const {data: fileHeaders, categoryId, headersRow: headers} = req.body;
         const fileId = req.params.fileKey;
-        const headers = req.body.headersRow;
 
         for (let key in headers) {
             const validationError = await validateSheetData(fileId, fileHeaders, headers[key]);
             if (validationError) {
-                console.log("here", validationError);
                 res.status(200).json({message: validationError});
                 return;
             }
@@ -71,69 +45,37 @@ exports.preprocessSelectedSheetData = async (req, res, next) => {
         }
         res.send("success");
     } catch (err) {
-        console.error(err);
-        res.status(500).json({message: "Internal Server Error"});
+        next(err);
     }
-};
+}];
 
-exports.createNewCategoryFromSheet = async (req, res, next) => {
-    if (!req.params.fileKey) {
-        res.status(400).json({message: "No fileKey"});
-        return;
-    }
-
-    if (!req.body) {
-        res.status(400).json({message: "No body"});
-        return;
-    }
-
+exports.createNewCategoryFromSheet = [validateRequestBody, validateRequest(['fileKey'], []), async (req, res, next) => {
     try {
         await IdVerifications.categoryExists({CategoryId: req.body.categoryId});
 
-        const fileHeaders = req.body.data;
-        const categoryId = req.body.categoryId;
+        const {data: fileHeaders, categoryId, headersRow: headers} = req.body;
         const fileId = req.params.fileKey;
-        const headers = req.body.headersRow;
-
-
 
         const validationErrors = await validateAllSheetsData(fileId, fileHeaders, headers);
         if (validationErrors) {
             res.status(200).json({message: validationErrors.join("\n")});
             return;
         }
-        const categories = await processSheetDataForCategory(fileId, fileHeaders, headers);
 
-        console.log(categories)
+        const categories = await processSheetDataForCategory(fileId, fileHeaders, headers);
         const category = await Category.findByPk(categoryId);
 
-
-        //create  the new categories as sub of the parent category
-        for (const key of Object.keys(categories)) {
-            console.log(key);
-            console.log(categories[key])
-            let products;
-
-            if (category.parentId) {
-                let newCategory = await Category.create({
-                    name: key, CompanyId: category.CompanyId, parentId: category.parentId,
-                });
-
-                products = [categories[key]].map((productData) => prepareProductData(productData, newCategory.id));
-            } else {
-                let newCategory = await Category.create({
-                    name: key, CompanyId: category.CompanyId, parentId: category.id,
-                });
-
-                products = [categories[key]].map((productData) => prepareProductData(productData, newCategory.id));
-            }
-            console.log(products[0])
-            await Product.bulkCreate(products[0]);
+        for (const [key, value] of Object.entries(categories)) {
+            const newCategoryData = {
+                name: key, CompanyId: category.CompanyId, parentId: category.parentId || category.id,
+            };
+            const newCategory = await Category.create(newCategoryData);
+            const products = [prepareProductData(value, newCategory.id)];
+            await Product.bulkCreate(products);
         }
 
         res.send("success");
     } catch (err) {
-        console.error(err);
-        res.status(500).json({message: "Internal Server Error"});
+        next(err);
     }
-};
+}];

@@ -2,17 +2,13 @@ const XLSX = require("xlsx");
 const fs = require("fs").promises;
 const {join} = require("path");
 
-exports.readDataFromExcelSheet = async (data, headersRow, sheetName) => {
-    const wb = XLSX.read(data, {type: "buffer"});
+const readFile = async (fileKey) => {
+    const file = join(__dirname, "..", "uploads", fileKey);
+    const bufferedFile = await fs.readFile(file);
+    return XLSX.read(bufferedFile, {type: "buffer"});
+};
 
-    const mySheetData = {};
-
-    // Check if the workbook has the sheetName
-    if (!wb.SheetNames.includes(sheetName)) {
-        console.error(`Sheet: ${sheetName} not found in the workbook`);
-        return;
-    }
-
+const getJsonData = (workbook, sheetName, headersRow) => {
     const firstRowToRead = headersRow - 1; // 0 based index
     const lastRowToRead = firstRowToRead + 100; // 100 rows after the header
 
@@ -21,34 +17,48 @@ exports.readDataFromExcelSheet = async (data, headersRow, sheetName) => {
         s: {c: 0, r: firstRowToRead}, e: {c: 200, r: lastRowToRead},
     };
 
-    const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {
-        range: range,
-    });
-    // Find the object with the most keys
-    const largestObject = jsonData.reduce((maxObj, currObj) => {
-        return Object.keys(currObj).length > Object.keys(maxObj).length ? currObj : maxObj;
-    }, {});
+    if (!workbook.SheetNames.includes(sheetName)) {
+        console.error(`Sheet: ${sheetName} not found in the workbook`);
+        return null;
+    }
 
-    // Create an array of objects from the keys of the largest object
-    const columns = Object.keys(largestObject).map((key) => ({column: key}));
-
-    // Assign columns array to mySheetData
-    mySheetData[sheetName] = columns;
-
-    return mySheetData;
+    return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {range});
 };
 
-exports.processSheetData = async (fileKey, fileHeaders, headersRow) => {
-    const file = join(__dirname, "..", "uploads", fileKey);
-    const bufferedFile = await fs.readFile(file);
-    let data = [];
+const getLargestObject = (jsonData) => {
+    return jsonData.reduce((maxObj, currObj) => {
+        return Object.keys(currObj).length > Object.keys(maxObj).length ? currObj : maxObj;
+    }, {});
+};
 
-    const workbook = XLSX.read(bufferedFile, {type: "buffer"});
+const getColumnsFromObject = (object) => {
+    return Object.keys(object).map((key) => ({column: key}));
+};
+
+exports.processData = async (fileKey, headersRow, sheetName) => {
+    const workbook = await readFile(fileKey);
+    const jsonData = getJsonData(workbook, sheetName, headersRow);
+
+    if (jsonData) {
+        const largestObject = getLargestObject(jsonData);
+        const columns = getColumnsFromObject(largestObject);
+
+        return {
+            [sheetName]: columns
+        };
+    }
+
+    return null;
+};
+
+
+exports.processSheetData = async (fileKey, fileHeaders, headersRow) => {
+    const workbook = await readFile(fileKey);
+    let data = [];
 
     for (let sheetName in fileHeaders) {
         const worksheet = workbook.Sheets[sheetName];
         if (worksheet) {
-            //TODO: get header from ui
             const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: headersRow});
             // Assume that the first row is the header
             let headers = jsonData.shift();
@@ -76,13 +86,9 @@ exports.processSheetData = async (fileKey, fileHeaders, headersRow) => {
 };
 
 exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) => {
-    const file = join(__dirname, "..", "uploads", fileKey);
-    const bufferedFile = await fs.readFile(file);
-
+    const workbook = await readFile(fileKey);
     let categories = {};
 
-    // Read the file using xlsx
-    const workbook = XLSX.read(bufferedFile, {type: "buffer"});
     for (let sheetName in fileHeaders) {
         if (sheetName in sheetHeader) {
             const worksheet = workbook.Sheets[sheetName];
@@ -124,9 +130,7 @@ exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) 
 };
 
 exports.validateSheetData = async (fileKey, fileHeaders, headersRow) => {
-    const file = join(__dirname, "..", "uploads", fileKey);
-    const bufferedFile = await fs.readFile(file);
-    const workbook = XLSX.read(bufferedFile, {type: "buffer"});
+    const workbook = await readFile(fileKey);
 
     for (let sheetName in fileHeaders) {
         const worksheet = workbook.Sheets[sheetName];
@@ -161,15 +165,6 @@ exports.validateSheetData = async (fileKey, fileHeaders, headersRow) => {
     return null;
 };
 
-const validators = {
-    name: (value) => typeof value === "string",
-    number: (value) => !isNaN(Number(value)) && /^-?\d*(\.\d+)?$/.test(value),
-    price: (value) => !isNaN(Number(value)) && /^\d{1,3}(,\d{3})*(\.\d{1,2})?$/.test(value), // e.g. 1,000.00
-    date: (value) => !isNaN(Date.parse(value)) && /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(value), // ISO format: yyyy-mm-dd
-    description: (value) => typeof value === "string",
-    text: (value) => typeof value === "string",
-    other: (value) => true, // no validation for 'other'
-};
 
 function validateDataType(dataType, value, newColumnName) {
     // Check if there's a validator for the specified data type
@@ -192,9 +187,7 @@ function validateDataType(dataType, value, newColumnName) {
 }
 
 exports.validateAllSheetsData = async (fileKey, fileHeaders, sheetHeader) => {
-    const file = join(__dirname, "..", "uploads", fileKey);
-    const bufferedFile = await fs.readFile(file);
-    const workbook = XLSX.read(bufferedFile, {type: "buffer"});
+    const workbook = await readFile(fileKey);
 
     let errors = [];
     for (let sheetName in fileHeaders) {
@@ -240,8 +233,7 @@ exports.validateAllSheetsData = async (fileKey, fileHeaders, sheetHeader) => {
 };
 
 exports.prepareProductData = (productDataArray, categoryId) => {
-    console.log("productDataArray", productDataArray)
-    const products = productDataArray
+    return productDataArray
         .map((productData) => {
             const product = {other: [], CategoryId: categoryId};
             const usedKeys = {name: false, price: false, description: false};
@@ -267,6 +259,14 @@ exports.prepareProductData = (productDataArray, categoryId) => {
         .filter((product) => {
             return !(product.CategoryId !== null && product.other.length === 0);
         });
+};
 
-    return products;
+const validators = {
+    name: (value) => typeof value === "string",
+    number: (value) => !isNaN(Number(value)) && /^-?\d*(\.\d+)?$/.test(value),
+    price: (value) => !isNaN(Number(value)) && /^\d{1,3}(,\d{3})*(\.\d{1,2})?$/.test(value), // e.g. 1,000.00
+    date: (value) => !isNaN(Date.parse(value)) && /^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(value), // ISO format: yyyy-mm-dd
+    description: (value) => typeof value === "string",
+    text: (value) => typeof value === "string",
+    other: (value) => true, // no validation for 'other'
 };

@@ -1,27 +1,20 @@
 const Category = require("../models/category");
 const IdVerifications = require("../middleware/idVerifications");
+const validateRequest = require('../middleware/validateRequest');
 
-exports.addCategories = async (req, res) => {
 
-    if (!req.params.CompanyId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.addCategories = [validateRequest(['CompanyId'], []), async (req, res, next) => {
 
     console.log(req.params);
     // await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
-        const { withSubcategories, categories } = req.body;
+        const {withSubcategories, categories} = req.body;
 
         // Create the categories and subcategories
         if (withSubcategories) {
             await Promise.all(categories.map(async (categoryData) => {
                 const category = await Category.create({
-                    name: categoryData.name,
-                    description: categoryData.description,
-                    CompanyId: req.params.CompanyId
+                    name: categoryData.name, description: categoryData.description, CompanyId: req.params.CompanyId
                 });
 
                 if (categoryData.subcategories && categoryData.subcategories.length > 0) {
@@ -37,51 +30,34 @@ exports.addCategories = async (req, res) => {
             }));
         } else {
             await Category.bulkCreate(categories.map((categoryData) => ({
-                name: categoryData.name,
-                description: categoryData.description,
-                CompanyId: req.params.CompanyId
+                name: categoryData.name, description: categoryData.description, CompanyId: req.params.CompanyId
             })));
         }
-        res.status(201).json({ message: 'Categories and subcategories created successfully.' });
+        res.status(201).json({message: 'Categories and subcategories created successfully.'});
 
     } catch (err) {
-        res.status(500).send({
-            message:
-                err.message || "Some error occurred while creating the Category."
-        });
+        next(err);
     }
-}
+}];
 
 
-exports.getCategories = async (req, res, next) => {
-    if (!req.params.CompanyId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.getCategories = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         let categories = await Category.findAll({
             where: {
-                CompanyId : req.params.CompanyId
+                CompanyId: req.params.CompanyId
             }
         })
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(categories));
         return res;
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        next(err);
     }
-};
+}];
 
-exports.deleteCategory = async (req, res) => {
-    if (!req.params.CategoryId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.deleteCategory = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         await Category.destroy({
@@ -89,33 +65,20 @@ exports.deleteCategory = async (req, res) => {
                 id: req.params.CategoryId,
             }
         })
-        
+
         res.send({
             message: "Category was deleted successfully!"
         });
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
-exports.updateCategory = async (req, res) => {
-    if (!req.params.CategoryId) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.updateCategory = [validateRequest(['CompanyId'], ['name']), async (req, res, next) => {
     await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         let category = {
-            name: req.body.name,
-            description: req.body.description,
+            name: req.body.name, description: req.body.description,
         }
         await Category.update(category, {
             where: {
@@ -125,8 +88,8 @@ exports.updateCategory = async (req, res) => {
         res.send({
             message: "Category was updated successfully!"
         });
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        next(err);
     }
 
-}
+}]

@@ -4,57 +4,31 @@ const Permission = require("../models/permission");
 const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
 const bcrypt = require("bcryptjs");
+const validateRequest = require('../middleware/validateRequest');
 
+exports.getEmployeesInCompany = [validateRequest(['id'], []), async (req, res, next) => {
 
-exports.getEmployeesInCompany = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
     await IdVerifications.companyExists({CompanyId: req.params.id});
     try {
         let employees = await Employee.findAll({
-            include: [
-                {
-                    model: Person,
-                    required: true,
-                    where: {
-                        CompanyId: req.params.id
-                    }
-                },
-                {
-                    model: Permission,
-                    attributes: ['id', 'name'],
-                    through: {
-                        attributes: []
-                    }
+            include: [{
+                model: Person, required: true, where: {
+                    CompanyId: req.params.id
                 }
-            ]
+            }, {
+                model: Permission, attributes: ['id', 'name'], through: {
+                    attributes: []
+                }
+            }]
         })
         res.status(200).send(employees)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
-exports.addEmployee = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
-    if (!req.body.name || !req.body.surname) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.addEmployee = [validateRequest(['id'], ['name', 'surname']), async (req, res, next) => {
+
     await IdVerifications.companyExists({CompanyId: req.params.id});
     try {
         // let emailExists = Employee.findAll({where: {email: req.body.email}})
@@ -74,9 +48,7 @@ exports.addEmployee = async (req, res) => {
         }
         person = await Person.create(person, {validate: true});
         let employee = {
-            PersonId: person.id,
-            email: req.body.email,
-            password: bcrypt.hashSync(req.body.password, 8)
+            PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
         }
         employee = await Employee.create(employee, {validate: true});
         if (req.body.permission) {
@@ -85,26 +57,12 @@ exports.addEmployee = async (req, res) => {
         }
         res.send(employee);
     } catch (err) {
-        res.status(500).send({
-            message:
-                err.message || "Some error occurred while creating the Employee."
-        });
+        next(err);
     }
-}
+}]
 
-exports.updatePerson = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "Content can not be empty!"
-        });
-        return;
-    }
+exports.updatePerson = [validateRequest(['id'], ['name']), async (req, res, next) => {
+
     await IdVerifications.userExists({EmployeeId: req.params.id});
     try {
         let person = {
@@ -123,11 +81,8 @@ exports.updatePerson = async (req, res) => {
         })
         let employee = await Employee.findAll({
             include: {
-                model: Person,
-                required: true,
-                where: {
-                    CompanyId: req.params.id,
-                    id: req.params.id
+                model: Person, required: true, where: {
+                    CompanyId: req.params.id, id: req.params.id
                 }
             },
         })
@@ -138,21 +93,13 @@ exports.updatePerson = async (req, res) => {
             await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
         }
         res.status(200).send(employee)
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while update request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]
 
-exports.deleteEmployee = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            message: "ID can not be empty!"
-        });
-        return;
-    }
+exports.deleteEmployee = [validateRequest(['id'], []), async (req, res, next) => {
+
     await IdVerifications.userExists({EmployeeId: req.params.id});
     try {
         await Employee.destroy({
@@ -166,10 +113,7 @@ exports.deleteEmployee = async (req, res) => {
             }
         })
         res.sendStatus(200);
-    } catch (error) {
-        res.status(500).send({
-            message:
-                error.message || "Some error occurred while delete request"
-        });
+    } catch (err) {
+        next(err);
     }
-}
+}]

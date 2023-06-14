@@ -1,113 +1,88 @@
 const Product = require("../models/product");
 const IdVerifications = require("../middleware/idVerifications");
+const validateRequest = require("../middleware/validateRequest");
+const validateRequestBody = require("../middleware/validateRequestBody");
 
-exports.addProducts = async (req, res) => {
-  if (!req.params.CategoryId) {
-    res.status(400).send({
-      message: "ID can not be empty!",
-    });
-    return;
-  }
-  if (!req.body) {
-    res.status(400).json({ message: "No body" });
-    return;
-  }
 
-  try {
-    // let products = req.body;
-    // products.forEach(async (product) => {
-    //     await Product.create({
-    //         name: product.name,
-    //         description: product.description,
-    //         price: product.price,
-    //         CategoryId: req.params.CategoryId
-    //     })
-    // })
-    res.send({
-      message: "Products were added successfully!",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+exports.addProducts = [validateRequest(['CategoryId'], []), validateRequestBody, async (req, res, next) => {
 
-exports.getProducts = async (req, res) => {
-  if (!req.params.CategoryId) {
-    res.status(400).send({
-      message: "ID can not be empty!",
-    });
-    return;
-  }
-  try {
-    await IdVerifications.categoryExists({ CategoryId: req.params.CategoryId });
-    const products = await Product.findAll({
-      where: {
-        CategoryId: req.params.CategoryId,
-      },
-    });
-    res.json(products);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+    try {
+        // let products = req.body;
+        // products.forEach(async (product) => {
+        //     await Product.create({
+        //         name: product.name,
+        //         description: product.description,
+        //         price: product.price,
+        //         CategoryId: req.params.CategoryId
+        //     })
+        // })
+        res.send({
+            message: "Products were added successfully!",
+        });
+    } catch (err) {
+        next(err);
+    }
+}]
 
-exports.deleteProduct = async (req, res) => {
-  if (!req.params.ProductId) {
-    res.status(400).send({
-      message: "ID can not be empty!",
-    });
-    return;
-  }
-  // await IdVerifications.productExists({ ProductId: req.params.ProductId });
-  try {
-    await Product.destroy({
-      where: {
-        id: req.params.ProductId,
-      },
-    });
+exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, next) => {
 
-    res.send({
-      message: "Product was deleted successfully!",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+    try {
+        await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
+        const products = await Product.findAll({
+            where: {
+                CategoryId: req.params.CategoryId,
+            },
+        });
+        res.json(products);
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.deleteProduct = [validateRequest(['ProductId'], []), async (req, res, next) => {
+
+    // await IdVerifications.productExists({ ProductId: req.params.ProductId });
+    try {
+        await Product.destroy({
+            where: {
+                id: req.params.ProductId,
+            },
+        });
+
+        res.send({
+            message: "Product was deleted successfully!",
+        });
+    } catch (err) {
+        next(err);
+    }
+}]
 
 exports.deleteAllProducts = async (req, res) => {
 
     try {
-        Product.destroy({where: {},});
+        await Product.destroy({where: {},});
         res.send({
-          message: "All Products were deleted successfully!",
+            message: "All Products were deleted successfully!",
         });
-      } catch (error) {
-        console.error(error);
-      }
+    } catch (err) {
+        next(err);
+    }
 }
 
-exports.deleteCategoryProducts = async (req, res) => {
-  if (!req.params.CategoryId) {
-    res.status(400).send({
-      message: "ID can not be empty!",
-    });
-    return;
-  }
-  await IdVerifications.categoryExists({ CategoryId: req.params.CategoryId });
+exports.deleteCategoryProducts = [validateRequest(['CategoryId'], []), async (req, res, next) => {
 
-  try {
-    Product.destroy({
-      where: {
-        CategoryId: req.params.CategoryId,
-      },
-    });
-    res.send({
-      message: "Products were deleted successfully!",
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+    await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
+
+    try {
+        await Product.destroy({
+            where: {
+                CategoryId: req.params.CategoryId,
+            },
+        });
+        res.send({
+            message: "Products were deleted successfully!",
+        });
+    } catch (err) {
+        next(err);
+    }
+}]
