@@ -7,7 +7,7 @@ const {
   processSheetDataForCategory,
   validateSheetData,
   validateAllSheetsData,
-  prepareProductData
+  prepareProductData,
 } = require("../middleware/readExcel");
 
 exports.readExcel = async (req, res, next) => {
@@ -54,10 +54,9 @@ exports.preprocessSelectedSheetData = async (req, res, next) => {
 
   try {
     const fileHeaders = req.body.data;
+    const categoryId = req.body.categoryId;
     const fileId = req.params.fileKey;
-
-    console.log(fileHeaders);
-    console.log(fileId);
+    const headersRow = req.body.headersRow;
 
     const validationError = await validateSheetData(fileId, fileHeaders);
     if (validationError) {
@@ -67,14 +66,13 @@ exports.preprocessSelectedSheetData = async (req, res, next) => {
     }
 
     const data = await processSheetData(fileId, fileHeaders);
-    console.log(data);
-    const products = data.map(productData => prepareProductData(productData));
 
-    const savedProducts = await Product.bulkCreate(products);
-    console.log(savedProducts);
-
-
-    res.send(data);
+    const products = data.map((productData) =>
+      prepareProductData(productData, categoryId)
+    );
+    await Product.bulkCreate(products[0]);
+    res.send("success");
+    res.send(products[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal Server Error" });
@@ -94,7 +92,9 @@ exports.createNewCategoryFromSheet = async (req, res, next) => {
 
   try {
     const fileHeaders = req.body.data;
+    const categoryId = req.body.categoryId;
     const fileId = req.params.fileKey;
+    const headersRow = req.body.headersRow;
 
     const validationErrors = await validateAllSheetsData(fileId, fileHeaders);
     if (validationErrors) {

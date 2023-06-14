@@ -271,24 +271,41 @@ exports.validateAllSheetsData = async (fileKey, fileHeaders) => {
   return null;
 };
 
-exports.prepareProductData = (productData) => {
-  let product = {other: {}};
-  let usedKeys = {name: false, price: false, description: false};
+exports.prepareProductData = (productDataArray, categoryId) => {
+  const products = productDataArray
+    .map((productData) => {
+      const product = { other: [], CategoryId: categoryId };
+      const usedKeys = { name: false, price: false, description: false };
 
-  productData.forEach(item => {
-    let keys = Object.keys(item);
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
-      let value = item[key];
+      productData.forEach((item) => {
+        const key = Object.keys(item)[0];
+        const value = item[key];
 
-      if (['name', 'price', 'description'].includes(value.type) && (!usedKeys[value.type] || value.useInInvoice)) {
-        product[value.type] = key;
-        usedKeys[value.type] = true;
-      } else {
-        product.other[key] = value;
-      }
-    }
-  });
+        if (
+          ["name", "price", "description"].includes(item.type) &&
+          (!usedKeys[item.type] || item.useInInvoice)
+        ) {
+          product[item.type] = value;
+          product[`${item.type}ColumnName`] = key;
+          usedKeys[item.type] = true;
+        } else {
+          product.other.push(item);
+        }
+      });
 
-  return product;
-}
+      return product;
+    })
+    .filter((product) => {
+      return (
+        product.name !== null ||
+        product.price !== null ||
+        product.description !== null ||
+        product.other.length > 0
+      );
+    })
+    .filter((product) => {
+      return !(product.CategoryId !== null && product.other.length === 0);
+    });
+
+  return products;
+};

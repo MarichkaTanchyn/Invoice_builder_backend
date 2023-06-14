@@ -17,6 +17,7 @@ const employeeRoute = require('./routes/employeeRoute');
 const invoiceRoute = require('./routes/invoiceRoute');
 const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 const csvRoute = require('./routes/csvRoute');
+const productRoute = require('./routes/productsRoute');
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -42,6 +43,7 @@ function initial() {
     });
 }
 try {
+    
     sequelize.authenticate();
     console.log('Connection has been established successfully.');
 } catch (error) {
@@ -69,3 +71,4 @@ app.use(authRoute);
 app.use(invoiceRoute);
 app.use(invoiceDraftRoute);
 app.use(csvRoute);
+app.use(productRoute);
