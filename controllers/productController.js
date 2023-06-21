@@ -24,7 +24,24 @@ exports.addProducts = [validateRequest(['CategoryId'], []), validateRequestBody,
     }
 }]
 
-exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, next) => {
+exports.updateProduct = [validateRequest(['ProductId'], []), validateRequestBody, async (req, res, next) => {
+
+    try {
+        await IdVerifications.productExists({ProductId: req.params.ProductId});
+        await Product.update(req.body, {
+            where: {
+                id: req.params.ProductId,
+            },
+        });
+        res.send({
+            message: "Product was updated successfully!",
+        });
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.isCategoryEmpty = [validateRequest(['CategoryId'], []), async (req, res, next) => {
 
     try {
         await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
@@ -33,7 +50,67 @@ exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, nex
                 CategoryId: req.params.CategoryId,
             },
         });
+        if (products.length === 0) {
+            res.send(true);
+        } else {
+            res.send(false);
+        }
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, next) => {
+    try {
+        await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
+        const products = await Product.findAll({
+            where: {
+                CategoryId: req.params.CategoryId,
+            },
+            attributes: ['id', 'name', 'nameColumnName', 'price', 'description', 'priceColumnName', 'descriptionColumnName', 'other']
+        });
         res.json(products);
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.updateProducts = [validateRequestBody , async (req, res, next) => {
+
+    try {
+        const products = req.body;
+        for (const product of products) {
+            // await IdVerifications.productExists({ProductId: product.id});
+            await Product.update(product, {
+                where: {
+                    id: product.id,
+                },
+            });
+        }
+
+        res.send({
+            message: "Products were updated successfully!",
+        });
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.deleteProducts =[validateRequestBody, async (req, res, next) => {
+    try {
+        const productIds = req.body;
+        for (const productId of productIds) {
+            // await IdVerifications.productExists({ProductId: productId});
+            await Product.destroy({
+                where: {
+                    id: productId,
+                },
+            });
+        }
+
+        res.send({
+            message: "Products were deleted successfully!",
+        });
     } catch (err) {
         next(err);
     }
