@@ -44,18 +44,41 @@ exports.addCategories = [validateRequest(['CompanyId'], []), async (req, res, ne
 exports.getCategories = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
-        let categories = await Category.findAll({
+        const categories = await Category.findAll({
             where: {
                 CompanyId: req.params.CompanyId
-            }
-        })
+            },
+            order: [
+                ['name', 'ASC']
+            ]
+        });
+
+        const sortedCategories = sortCategories(categories);
+
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(categories));
+        res.end(JSON.stringify(sortedCategories));
         return res;
     } catch (err) {
         next(err);
     }
 }];
+
+
+function sortCategories(categories) {
+    const categoriesWithNoParents = categories.filter(category => category.parentId === null);
+    const categoriesWithParents = categories.filter(category => category.parentId !== null);
+
+    return categoriesWithNoParents.sort(compareByName).flatMap(category => [
+        category,
+        ...categoriesWithParents
+            .filter(subCategory => subCategory.parentId === category.id)
+            .sort(compareByName)
+    ]);
+}
+
+function compareByName(a, b) {
+    return a.name.localeCompare(b.name);
+}
 
 exports.deleteCategory = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
