@@ -4,20 +4,28 @@ const validateRequest = require("../middleware/validateRequest");
 const validateRequestBody = require("../middleware/validateRequestBody");
 
 
-exports.addProducts = [validateRequest(['CategoryId'], []), validateRequestBody, async (req, res, next) => {
+exports.addProduct = [validateRequest(['CategoryId'], []), validateRequestBody, async (req, res, next) => {
 
     try {
-        // let products = req.body;
-        // products.forEach(async (product) => {
-        //     await Product.create({
-        //         name: product.name,
-        //         description: product.description,
-        //         price: product.price,
-        //         CategoryId: req.params.CategoryId
-        //     })
-        // })
+        console.log(req.body);
+
+        await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
+
+        const newProduct = {
+            name: req.body.name,
+            nameColumnName: req.body.nameColumnName,
+            price: req.body.price,
+            priceColumnName: req.body.priceColumnName,
+            description: req.body.description,
+            descriptionColumnName: req.body.descriptionColumnName,
+            CategoryId: req.params.CategoryId,
+            other: req.body.other
+        };
+
+        await Product.create(newProduct);
+
         res.send({
-            message: "Products were added successfully!",
+            message: "Product was added successfully!",
         });
     } catch (err) {
         next(err);

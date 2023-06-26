@@ -4,7 +4,7 @@ const productController = require("../controllers/productController");
 
 const router = express.Router();
 
-router.post("/addProducts/:CategoryId", productController.addProducts);
+router.post("/addProduct/:CategoryId", productController.addProduct);
 
 router.get("/isCategoryEmpty/:CategoryId", productController.isCategoryEmpty);
 
