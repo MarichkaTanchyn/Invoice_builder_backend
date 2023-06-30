@@ -49,24 +49,6 @@ exports.updateProduct = [validateRequest(['ProductId'], []), validateRequestBody
     }
 }]
 
-exports.isCategoryEmpty = [validateRequest(['CategoryId'], []), async (req, res, next) => {
-
-    try {
-        await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
-        const products = await Product.findAll({
-            where: {
-                CategoryId: req.params.CategoryId,
-            },
-        });
-        if (products.length === 0) {
-            res.send(true);
-        } else {
-            res.send(false);
-        }
-    } catch (err) {
-        next(err);
-    }
-}]
 
 exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, next) => {
     try {

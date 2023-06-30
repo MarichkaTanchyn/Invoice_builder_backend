@@ -6,8 +6,6 @@ const router = express.Router();
 
 router.post("/addProduct/:CategoryId", productController.addProduct);
 
-router.get("/isCategoryEmpty/:CategoryId", productController.isCategoryEmpty);
-
 router.get("/getCategoryProducts/:CategoryId", productController.getProducts);
 
 router.post("/updateProducts", productController.updateProducts);
