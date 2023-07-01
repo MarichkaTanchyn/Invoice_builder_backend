@@ -6,32 +6,45 @@ const Employee = db.employee;
 const Company = db.company;
 const Person = db.person;
 const permissionOperations = require("../middleware/permissionCheck");
-const Permission = require("../models/permission");
 const validateRequest = require('../middleware/validateRequest');
+const verifySignUp = require("../middleware/verifySignUp");
+
 
 exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
 
+    const emailIsValid = await verifySignUp.checkDuplicateEmail(req.body.email);
+
+    console.log(emailIsValid)
     if (req.body.token) {
         //TODO register a new user to existed company
     } else {
         try {
-            let company = {
-                firmName: req.body.firmName,
+            if (!emailIsValid) {
+                let company = {
+                    firmName: req.body.firmName,
+                }
+                company = await Company.create(company, {validate: true});
+
+                let person = {
+                    CompanyId: company.id, email: req.body.email
+                }
+                person = await Person.create(person, {validate: true});
+
+                let employee = {
+                    PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
+                }
+                employee = await Employee.create(employee, {validate: true});
+
+                await permissionOperations.setAllPermissions(employee.PersonId)
+
+                let permissions = await permissionOperations.getEmployeePermissions(employee.PersonId)
+                // res.send({
+                //     "company": company, "person": person, "employee": [employee, permissions]
+                // });
+                res.send({"message": "success"})
+            } else {
+                res.send(emailIsValid);
             }
-            company = await Company.create(company, {validate: true});
-            let person = {
-                CompanyId: company.id, email: req.body.email
-            }
-            person = await Person.create(person, {validate: true});
-            let employee = {
-                PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
-            }
-            employee = await Employee.create(employee, {validate: true});
-            await permissionOperations.setAllPermissions(employee.PersonId)
-            let permissions = await permissionOperations.getEmployeePermissions(employee.PersonId)
-            res.send({
-                "company": company, "person": person, "employee": [employee, permissions,]
-            });
         } catch (err) {
             next(err);
         }

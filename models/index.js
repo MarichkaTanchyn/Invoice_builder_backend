@@ -7,7 +7,6 @@ db.sequelize = sequelize;
 
 db.employee = require("./employee");
 db.permission = require("./permission");
-// db.employeePermission = require("./employeePermission");
 db.company = require("./company");
 db.person = require("./person");
 db.customer = require('./customer');
@@ -15,6 +14,12 @@ db.invoice = require('./invoice');
 db.invoiceDraft = require('./invoiceDraft');
 db.category = require('./category');
 db.product = require('./product');
+db.session = require('./session');
+
+// session & employee
+db.session.belongsTo(db.employee);
+db.employee.hasMany(db.session);
+
 
 // ROLE & EMPLOYEE
 db.permission.belongsToMany(db.employee, {

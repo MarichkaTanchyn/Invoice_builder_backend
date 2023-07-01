@@ -21,7 +21,7 @@ const productRoute = require('./routes/productsRoute');
 const errorHandler = require('./middleware/errorHandler');
 
 // Parse URL-encoded bodies
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 // Parse JSON bodies
 app.use(bodyParser.json());
 
@@ -31,20 +31,18 @@ app.use(cors({
 
 function initial() {
     Permission.create({
-        id: 1,
-        name: "all_invoices_access"
+        id: 1, name: "all_invoices_access"
     });
     Permission.create({
-        id: 2,
-        name: "category_management"
+        id: 2, name: "category_management"
     });
     Permission.create({
-        id: 3,
-        name: "products_management"
+        id: 3, name: "products_management"
     });
 }
+
 try {
-    
+
     sequelize.authenticate();
     console.log('Connection has been established successfully.');
 } catch (error) {

@@ -9,23 +9,16 @@ const hasPermission = async (employeeId, permissionName) => {
         return false;
     }
     const employee = await Employee.findOne({
-        where: {id: employeeId},
-        include: [
-            {
-                model: Permission,
-                where: {id: permission.id},
-                through: {attributes: []},
-            },
-        ],
+        where: {id: employeeId}, include: [{
+            model: Permission, where: {id: permission.id}, through: {attributes: []},
+        },],
     });
     return employee !== null;
 };
 
 const setAllPermissions = async (EmployeeId) => {
     const permissionEnum = await Permission.findAll();
-
     let employee = await Employee.findByPk(EmployeeId);
-
     for (const permission of permissionEnum) {
         await employee.addPermission(permission);
     }
@@ -34,8 +27,7 @@ const setAllPermissions = async (EmployeeId) => {
 const getEmployeePermissions = async (EmployeeId) => {
     let employee = await Employee.findByPk(EmployeeId);
     return await employee.getPermissions({
-        attributes: ['id', 'name'],
-        through: {
+        attributes: ['id', 'name'], through: {
             attributes: []
         }
     });
