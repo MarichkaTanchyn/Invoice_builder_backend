@@ -1,21 +1,22 @@
 const express = require('express');
 
 const productController = require("../controllers/productController");
+const {authorize} = require("../middleware/authJwt");
 
 const router = express.Router();
 
-router.post("/addProduct/:CategoryId", productController.addProduct);
+router.post("/addProduct/:CategoryId",  authorize,productController.addProduct);
 
-router.get("/getCategoryProducts/:CategoryId", productController.getProducts);
+router.get("/getCategoryProducts/:CategoryId", authorize, productController.getProducts);
 
-router.post("/updateProducts", productController.updateProducts);
+router.post("/updateProducts", authorize, productController.updateProducts);
 
-router.delete("/deleteProduct/:ProductId", productController.deleteProduct);
+router.delete("/deleteProduct/:ProductId", authorize, productController.deleteProduct);
 
-router.delete("/deleteAllProducts", productController.deleteAllProducts);
+router.delete("/deleteAllProducts", authorize, productController.deleteAllProducts);
 
-router.post("/deleteProducts", productController.deleteProducts);
+router.post("/deleteProducts", authorize, productController.deleteProducts);
 
-router.delete("/deleteCategoryProducts/:CategoryId", productController.deleteCategoryProducts);
+router.delete("/deleteCategoryProducts/:CategoryId", authorize, productController.deleteCategoryProducts);
 
 module.exports = router;

@@ -1,18 +1,19 @@
 const express = require('express');
 
 const invoiceController = require("../controllers/invoiceController");
+const {authorize} = require("../middleware/authJwt");
 
 const router = express.Router();
 
-router.get("/getAllDocuments/:CompanyId/:EmployeeId", invoiceController.getAllDocuments);
+router.get("/getAllDocuments/:CompanyId/:EmployeeId", authorize, invoiceController.getAllDocuments);
 
-router.get("/getInvoice/:InvoiceId", invoiceController.getInvoice);
+router.get("/getInvoice/:InvoiceId", authorize, invoiceController.getInvoice);
 
-router.post("/createInvoice/:EmployeeId", invoiceController.createInvoice);
+router.post("/createInvoice/:EmployeeId", authorize, invoiceController.createInvoice);
 
-router.delete("/deleteInvoice/:InvoiceId", invoiceController.deleteInvoice);
+router.delete("/deleteInvoice/:InvoiceId", authorize, invoiceController.deleteInvoice);
 
-router.post("/updateInvoice/:InvoiceId", invoiceController.updateInvoice);
+router.post("/updateInvoice/:InvoiceId", authorize, invoiceController.updateInvoice);
 
 
 module.exports = router;

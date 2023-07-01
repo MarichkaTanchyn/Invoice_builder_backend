@@ -1,15 +1,16 @@
 const express = require('express');
 
 const companyController = require("../controllers/companyController");
+const {authorize} = require("../middleware/authJwt");
 
 const router = express.Router();
 
-router.get("/getAllCompanies", companyController.getAllCompanies);
+router.get("/getAllCompanies", authorize, companyController.getAllCompanies);
 
-router.get("/getCompany/:CompanyId", companyController.getCompany)
+router.get("/getCompany/:CompanyId", authorize, companyController.getCompany)
 
-router.delete("/deleteCompany/:CompanyId", companyController.deleteCompany);
+router.delete("/deleteCompany/:CompanyId", authorize, companyController.deleteCompany);
 
-router.post("/updateCompany/:CompanyId", companyController.updateCompany);
+router.post("/updateCompany/:CompanyId", authorize, companyController.updateCompany);
 
 module.exports = router;

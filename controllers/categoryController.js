@@ -80,7 +80,7 @@ function compareByName(a, b) {
     return a.name.localeCompare(b.name);
 }
 
-exports.deleteCategory = [validateRequest(['CompanyId'], []), async (req, res, next) => {
+exports.deleteCategory = [validateRequest(['CategoryId'], []), async (req, res, next) => {
     await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         await Category.destroy({
@@ -97,7 +97,7 @@ exports.deleteCategory = [validateRequest(['CompanyId'], []), async (req, res, n
     }
 }]
 
-exports.updateCategory = [validateRequest(['CompanyId'], ['name']), async (req, res, next) => {
+exports.updateCategory = [validateRequest(['CategoryId'], ['name']), async (req, res, next) => {
     await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
     try {
         let category = {

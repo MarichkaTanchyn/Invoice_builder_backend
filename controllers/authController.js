@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const Employee = db.employee;
 const Company = db.company;
 const Person = db.person;
+const Session = db.session;
 const permissionOperations = require("../middleware/permissionCheck");
 const validateRequest = require('../middleware/validateRequest');
 const verifySignUp = require("../middleware/verifySignUp");
@@ -26,12 +27,12 @@ exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async 
                 company = await Company.create(company, {validate: true});
 
                 let person = {
-                    CompanyId: company.id, email: req.body.email
+                    CompanyId: company.id, email: req.body.email.toLowerCase()
                 }
                 person = await Person.create(person, {validate: true});
 
                 let employee = {
-                    PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
+                    PersonId: person.id, email: req.body.email.toLowerCase(), password: bcrypt.hashSync(req.body.password, 8)
                 }
                 employee = await Employee.create(employee, {validate: true});
 
@@ -56,11 +57,16 @@ exports.signIn = async (req, res) => {
     console.log(req.body)
     let employee = await Employee.findOne({
         where: {
-            username: req.body.username
+            email: req.body.email
         }
     });
 
-    console.log(employee);
+    let person = await Person.findAll({
+        where: {
+            email: req.body.email
+        }
+    })
+
     if (!employee) {
         return res.status(404).send({message: "Employee Not found."});
     }
@@ -70,16 +76,35 @@ exports.signIn = async (req, res) => {
             accessToken: null, message: "Invalid Password!"
         });
     }
+
+    // JWT Token generation
     let token = jwt.sign({id: employee.id}, config.secret, {
         expiresIn: 86400 // 24 hours
     });
-    let authorities = [];
-    let roles = employee.getRoles();
 
-    for (let i = 0; i < roles.length; i++) {
-        authorities.push("ROLE_" + roles[i].name.toUpperCase());
+    // Session creation and storage in database
+    let session = await Session.create({
+        token: token,
+        lastAccess: new Date(),
+        EmployeeId: employee.id
+    });
+
+    if (!session) {
+        return res.status(500).send({message: "Failed to create session."});
     }
+
+    let authorities = [];
+    let permissions = await permissionOperations.getEmployeePermissions(employee.id)
+
+    for (let i = 0; i < permissions.length; i++) {
+        authorities.push("PERMISSION_" + permissions[i].name.toUpperCase());
+    }
+
     res.status(200).send({
-        id: employee.id, email: employee.email, roles: authorities, accessToken: token
+        employeeId: employee.id,
+        companyId: person[0].CompanyId,
+        email: employee.email,
+        roles: authorities,
+        accessToken: token
     });
 };

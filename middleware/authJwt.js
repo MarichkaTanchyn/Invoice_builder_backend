@@ -1,44 +1,40 @@
 const jwt = require("jsonwebtoken");
 const config = require("../util/auth");
 const db = require("../models");
-const User = db.user;
+const Session = db.session;
 
-verifyToken = (req, res, next) => {
-    let token = req.headers["x-access-token"];
+const authorize = async (req, res, next) => {
+    // Get the token from the 'Authorization' header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        return res.status(403).send({
-            message: "No token provided!"
-        });
+        return res.status(403).send({ message: "No token provided!" });
     }
-    jwt.verify(token, config.secret, (err, decoded) => {
+
+    jwt.verify(token, config.secret, async (err, decoded) => {
         if (err) {
-            return res.status(401).send({
-                message: "Unauthorized!"
-            });
+            if (err.name === "TokenExpiredError") {
+                return res.status(401).send({ message: "Token expired!" });
+            } else {
+                return res.status(401).send({ message: "Token is invalid!" });
+            }
         }
+
+        // Check if the token exists in the Session table
+        const session = await Session.findOne({ where: { token: token } });
+        if (!session) {
+            return res.status(401).send({ message: "Session not found in database!" });
+        }
+
+        // Save the decoded user ID in the request for later use
         req.userId = decoded.id;
+
+        // Call the next middleware function
         next();
     });
-};
-isAdmin = (req, res, next) => {
-    User.findByPk(req.userId).then(user => {
-        user.getRoles().then(roles => {
-            for (let i = 0; i < roles.length; i++) {
-                if (roles[i].name === "admin") {
-                    next();
-                    return;
-                }
-            }
-            res.status(403).send({
-                message: "Require Admin Role!"
-            });
-            return;
-        });
-    });
-};
 
+};
 const authJwt = {
-    verifyToken: verifyToken,
-    isAdmin: isAdmin,
+    authorize: authorize,
 };
 module.exports = authJwt;
