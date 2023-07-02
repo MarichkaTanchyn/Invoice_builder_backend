@@ -89,6 +89,7 @@ exports.signIn = async (req, res) => {
         EmployeeId: employee.id
     });
 
+
     if (!session) {
         return res.status(500).send({message: "Failed to create session."});
     }

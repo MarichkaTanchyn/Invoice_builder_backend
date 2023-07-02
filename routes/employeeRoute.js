@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.get("/getCompanyEmployees/:id", authorize, employeeController.getEmployeesInCompany)
 
+router.get("/getEmployee/:id", authorize, employeeController.getEmployee);
+
 router.post("/addEmployee/:id",
     [
         verifySignUp.checkDuplicateEmail,
@@ -17,6 +19,6 @@ router.post("/addEmployee/:id",
 
 router.delete("/deleteEmployee/:id", authorize, employeeController.deleteEmployee);
 
-router.post("/updatePerson/:id", authorize, employeeController.updatePerson);
+router.post("/updateEmployeePerson/:id", authorize, employeeController.updateEmployeePerson);
 
 module.exports = router;

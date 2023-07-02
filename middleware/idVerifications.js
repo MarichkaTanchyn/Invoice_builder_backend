@@ -4,7 +4,7 @@ const Invoice = require("../models/invoice");
 const InvoiceDraft = require("../models/invoiceDraft");
 const Category = require("../models/category");
 
-const userExists = async ({EmployeeId}) => {
+const employeeExists = async ({EmployeeId}) => {
     let employee = await Employee.findByPk(EmployeeId);
     if (!employee) {
         throw new Error("User doesn't exist");
@@ -45,7 +45,7 @@ const categoryExists = async ({CategoryId}) => {
 }
 
 const IdVerifications = {
-    userExists: userExists,
+    employeeExists: employeeExists,
     companyExists: companyExists,
     invoiceExists: invoiceExists,
     invoiceDraftExists: invoiceDraftExists,

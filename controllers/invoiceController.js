@@ -11,7 +11,7 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
     try {
         const {CompanyId, EmployeeId} = req.params;
 
-        await IdVerifications.userExists({EmployeeId});
+        await IdVerifications.employeeExists({EmployeeId});
         await IdVerifications.companyExists({CompanyId});
         //todo: add employee name and surname to response
 
@@ -67,7 +67,7 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
 //todo: rewrite this function, its test function, in real one I will need more details
 exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
 
-    await IdVerifications.userExists({EmployeeId: req.params.EmployeeId});
+    await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     let employee = await Employee.findAll({
         include: {
             model: Person, required: true, where: {

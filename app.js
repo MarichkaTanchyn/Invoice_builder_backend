@@ -39,6 +39,9 @@ function initial() {
     Permission.create({
         id: 3, name: "products_management"
     });
+    Permission.create({
+        id: 4, name: "admin"
+    });
 }
 
 try {

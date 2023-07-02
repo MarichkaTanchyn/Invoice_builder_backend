@@ -6,7 +6,7 @@ const validateRequest = require("../middleware/validateRequest");
 
 exports.createInvoiceDraft = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
 
-    await IdVerifications.userExists({EmployeeId: req.params.EmployeeId});
+    await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     let employee = await Employee.findAll({
         include: {
             model: Person, required: true, where: {

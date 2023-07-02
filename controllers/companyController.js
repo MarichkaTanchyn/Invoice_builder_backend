@@ -28,7 +28,6 @@ exports.getCompany = [validateRequest(['CompanyId'], []), async (req, res, next)
 }]
 
 exports.updateCompany = [validateRequest(['CompanyId'], []), async (req, res, next) => {
-
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         await Company.update(req.body, {

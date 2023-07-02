@@ -27,6 +27,23 @@ exports.getEmployeesInCompany = [validateRequest(['id'], []), async (req, res, n
     }
 }]
 
+exports.getEmployee = [validateRequest(['id'], []), async (req, res, next) => {
+
+    await IdVerifications.employeeExists({EmployeeId: req.params.id});
+
+    try {
+        const employee = await Employee.findByPk(req.params.id, {
+            include: [{
+                model: Person, required: true
+            }]
+        });
+        res.status(200).send(employee.Person);
+    } catch (err) {
+        next(err);
+    }
+
+}]
+
 exports.addEmployee = [validateRequest(['id'], ['name', 'surname']), async (req, res, next) => {
 
     await IdVerifications.companyExists({CompanyId: req.params.id});
@@ -61,37 +78,39 @@ exports.addEmployee = [validateRequest(['id'], ['name', 'surname']), async (req,
     }
 }]
 
-exports.updatePerson = [validateRequest(['id'], ['name']), async (req, res, next) => {
+exports.updateEmployeePerson = [validateRequest(['id'], []), async (req, res, next) => {
 
-    await IdVerifications.userExists({EmployeeId: req.params.id});
+    await IdVerifications.employeeExists({EmployeeId: req.params.id});
     try {
+
         let person = {
-            CompanyId: req.body.id,
-            firstName: req.body.name,
-            lastName: req.body.surname,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
             middleName: req.body.middleName,
             phoneNumber: req.body.phoneNumber,
             email: req.body.email
-
         }
+
+        // Update the Person where id is the associated Person's id.
         await Person.update(person, {
             where: {
-                id: req.params.id
+                id: req.body.id
             }
         })
-        let employee = await Employee.findAll({
-            include: {
-                model: Person, required: true, where: {
-                    CompanyId: req.params.id, id: req.params.id
-                }
-            },
-        })
-        //TODO: decide do I need to send fro update all permission which person should have or only additional ones.
+
+        // Retrieve the updated employee and associated person.
+       const employee = await Employee.findByPk(req.params.id, {
+            include: [{
+                model: Person, required: true
+            }]
+        });
+
         if (req.body.permission === "none") {
             await permissionOperations.deleteAllPermissions({EmployeeId: req.params.id});
         } else if (req.body.permission) {
             await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
         }
+
         res.status(200).send(employee)
     } catch (err) {
         next(err);
@@ -100,7 +119,7 @@ exports.updatePerson = [validateRequest(['id'], ['name']), async (req, res, next
 
 exports.deleteEmployee = [validateRequest(['id'], []), async (req, res, next) => {
 
-    await IdVerifications.userExists({EmployeeId: req.params.id});
+    await IdVerifications.employeeExists({EmployeeId: req.params.id});
     try {
         await Employee.destroy({
             where: {
