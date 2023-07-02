@@ -32,6 +32,10 @@ const Company = sequelize.define('Company', {
         type: Sequelize.INTEGER,
         allowNull: true
     },
+    bankAccountNumber: {
+        type: Sequelize.STRING,
+        allowNull: true
+    }
 });
 
 module.exports = Company;

@@ -44,39 +44,6 @@ exports.getEmployee = [validateRequest(['id'], []), async (req, res, next) => {
 
 }]
 
-exports.addEmployee = [validateRequest(['id'], ['name', 'surname']), async (req, res, next) => {
-
-    await IdVerifications.companyExists({CompanyId: req.params.id});
-    try {
-        // let emailExists = Employee.findAll({where: {email: req.body.email}})
-        // if (!emailExists.empty) {
-        //     res.status(400).send({
-        //         message: "Email already exists!"
-        //     });
-        //     return;
-        // }
-        let person = {
-            CompanyId: req.params.id,
-            firstName: req.body.name,
-            lastName: req.body.surname,
-            middleName: req.body.middleName,
-            phoneNumber: req.body.phoneNumber,
-            email: req.body.email
-        }
-        person = await Person.create(person, {validate: true});
-        let employee = {
-            PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
-        }
-        employee = await Employee.create(employee, {validate: true});
-        if (req.body.permission) {
-            console.log(req.body.permission)
-            await permissionOperations.addPermission({EmployeeId: employee.id, permission: req.body.permission});
-        }
-        res.send(employee);
-    } catch (err) {
-        next(err);
-    }
-}]
 
 exports.updateEmployeePerson = [validateRequest(['id'], []), async (req, res, next) => {
 

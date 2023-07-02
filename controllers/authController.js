@@ -6,18 +6,19 @@ const Employee = db.employee;
 const Company = db.company;
 const Person = db.person;
 const Session = db.session;
+const Invitation = db.invitation;
 const permissionOperations = require("../middleware/permissionCheck");
 const validateRequest = require('../middleware/validateRequest');
 const verifySignUp = require("../middleware/verifySignUp");
+const IdVerifications = require("../middleware/idVerifications");
 
 
-exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
+exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
 
     const emailIsValid = await verifySignUp.checkDuplicateEmail(req.body.email);
 
     console.log(emailIsValid)
     if (req.body.token) {
-        //TODO register a new user to existed company
     } else {
         try {
             if (!emailIsValid) {
@@ -32,7 +33,9 @@ exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async 
                 person = await Person.create(person, {validate: true});
 
                 let employee = {
-                    PersonId: person.id, email: req.body.email.toLowerCase(), password: bcrypt.hashSync(req.body.password, 8)
+                    PersonId: person.id,
+                    email: req.body.email.toLowerCase(),
+                    password: bcrypt.hashSync(req.body.password, 8)
                 }
                 employee = await Employee.create(employee, {validate: true});
 
@@ -51,6 +54,49 @@ exports.signup = [validateRequest([], ['email', 'password', 'firmName']), async 
         }
     }
 }];
+
+
+exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), async (req, res) => {
+
+    await IdVerifications.inviteValid({token: req.params.token});
+    // const emailIsValid = await verifySignUp.checkDuplicateEmail(req.body.email);
+    console.log(req.body)
+    console.log(req.params)
+
+    try {
+        let invitation = await Invitation.findOne({
+            where: {
+                token : req.params.token
+            }
+        });
+
+        await IdVerifications.companyExists({CompanyId: invitation.CompanyId});
+
+        let person = {
+            CompanyId: invitation.CompanyId,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            middleName: req.body.middleName,
+            phoneNumber: req.body.phoneNumber,
+            email: req.body.email
+        }
+        person = await Person.create(person, {validate: true});
+        let employee = {
+            PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8)
+        }
+        employee = await Employee.create(employee, {validate: true});
+
+        await Invitation.destroy({
+            where: {
+                id : invitation.id
+            }
+        });
+
+        res.send(employee);
+    } catch (err) {
+        next(err);
+    }
+}]
 
 
 exports.signIn = async (req, res) => {
@@ -84,9 +130,7 @@ exports.signIn = async (req, res) => {
 
     // Session creation and storage in database
     let session = await Session.create({
-        token: token,
-        lastAccess: new Date(),
-        EmployeeId: employee.id
+        token: token, lastAccess: new Date(), EmployeeId: employee.id
     });
 
 
@@ -109,3 +153,26 @@ exports.signIn = async (req, res) => {
         accessToken: token
     });
 };
+
+
+exports.createInvite = [validateRequest(['CompanyId'], []), async (req, res, next) => {
+    const companyId = req.params.CompanyId;
+
+    await IdVerifications.companyExists({ CompanyId: companyId });
+
+    try {
+        const token = jwt.sign({ companyId }, config.secret, {
+            expiresIn: '1h'
+        });
+
+        await Invitation.create({
+            token,
+            CompanyId: companyId
+        });
+
+        // Return the token
+        res.json({ token });
+    } catch (err) {
+        next(err);
+    }
+}]

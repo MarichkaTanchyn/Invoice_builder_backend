@@ -7,9 +7,12 @@ const {authorize} = require("../middleware/authJwt");
 
 const router = express.Router();
 
-router.post(
-    "/signup",
-    controller.signup
-);
+router.post("/companySignup", controller.companySignup);
+
 router.post("/signIn", controller.signIn);
+
+router.post("/employeeSignup/:token", controller.employeeSignup);
+
+router.get("/createInvite/:CompanyId", controller.createInvite)
+
 module.exports = router;

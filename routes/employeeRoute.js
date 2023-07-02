@@ -10,12 +10,12 @@ router.get("/getCompanyEmployees/:id", authorize, employeeController.getEmployee
 
 router.get("/getEmployee/:id", authorize, employeeController.getEmployee);
 
-router.post("/addEmployee/:id",
-    [
-        verifySignUp.checkDuplicateEmail,
-        authorize
-    ],
-    employeeController.addEmployee);
+// router.post("/addEmployee/:id",
+//     [
+//         verifySignUp.checkDuplicateEmail,
+//         authorize
+//     ],
+//     employeeController.addEmployee);
 
 router.delete("/deleteEmployee/:id", authorize, employeeController.deleteEmployee);
 

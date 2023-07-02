@@ -1,8 +1,6 @@
 const db = require("../models");
 const User = db.employee;
 
-
-
 checkDuplicateEmail = async (email) => {
     return await User.findOne({
         where: {

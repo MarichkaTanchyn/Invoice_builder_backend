@@ -15,11 +15,15 @@ db.invoiceDraft = require('./invoiceDraft');
 db.category = require('./category');
 db.product = require('./product');
 db.session = require('./session');
+db.invitation = require('./invitation');
+
+// COMPANY & INVITATION
+db.company.hasMany(db.invitation, {onDelete: 'CASCADE', hooks: true});
+db.invitation.belongsTo(db.company);
 
 // session & employee
 db.session.belongsTo(db.employee);
 db.employee.hasMany(db.session);
-
 
 // ROLE & EMPLOYEE
 db.permission.belongsToMany(db.employee, {
