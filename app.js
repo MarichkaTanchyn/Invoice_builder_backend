@@ -7,7 +7,11 @@ const multer = require('multer');
 const app = express();
 const Permission = require('./models/permission');
 const cors = require('cors');
+const cron = require('node-cron');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
+const Invitation = require('./models/invitation');
 
 const categoryRoute = require('./routes/categoryRoute');
 const fileRoute = require('./routes/fileRoute');
@@ -19,6 +23,7 @@ const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 const csvRoute = require('./routes/csvRoute');
 const productRoute = require('./routes/productsRoute');
 const errorHandler = require('./middleware/errorHandler');
+
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({extended: false}));
@@ -59,6 +64,29 @@ sequelize
     .then(cart => {
         app.listen(3000);
         // initial()
+        function deleteExpiredTokens() {
+            let EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
+            const expirationDate = new Date(Date.now() - EXPIRATION_TIME);
+            Invitation.destroy({
+                where: {
+                    createdAt: {
+                        [Op.lt]: expirationDate
+                    }
+                }
+            })
+                .then(() => {
+                    console.log('Expired tokens deleted');
+                })
+                .catch(err => {
+                    console.error('Error deleting tokens', err);
+                });
+        }
+
+        // Delete expired tokens right away
+        deleteExpiredTokens();
+
+        // Then schedule the job to run every hour
+        cron.schedule('0 * * * *', deleteExpiredTokens);
     })
     .catch(err => {
         console.log(err);

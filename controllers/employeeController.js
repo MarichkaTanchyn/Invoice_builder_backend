@@ -84,18 +84,21 @@ exports.updateEmployeePerson = [validateRequest(['id'], []), async (req, res, ne
     }
 }]
 
-exports.deleteEmployee = [validateRequest(['id'], []), async (req, res, next) => {
+exports.deleteEmployee = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
 
-    await IdVerifications.employeeExists({EmployeeId: req.params.id});
+    await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     try {
+
+        const employee = await Employee.findByPk(req.params.EmployeeId)
+
         await Employee.destroy({
             where: {
-                id: req.params.id
+                id: req.params.EmployeeId
             }
         })
         await Person.destroy({
             where: {
-                id: req.params.id
+                id: employee.PersonId
             }
         })
         res.sendStatus(200);

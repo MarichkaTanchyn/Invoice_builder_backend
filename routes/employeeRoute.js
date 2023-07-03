@@ -1,5 +1,4 @@
 const express = require('express');
-const verifySignUp = require("../middleware/verifySignUp");
 
 const employeeController = require("../controllers/employeeController");
 const {authorize} = require("../middleware/authJwt");
@@ -10,14 +9,7 @@ router.get("/getCompanyEmployees/:id", authorize, employeeController.getEmployee
 
 router.get("/getEmployee/:id", authorize, employeeController.getEmployee);
 
-// router.post("/addEmployee/:id",
-//     [
-//         verifySignUp.checkDuplicateEmail,
-//         authorize
-//     ],
-//     employeeController.addEmployee);
-
-router.delete("/deleteEmployee/:id", authorize, employeeController.deleteEmployee);
+router.delete("/deleteEmployee/:EmployeeId", authorize, employeeController.deleteEmployee);
 
 router.post("/updateEmployeePerson/:id", authorize, employeeController.updateEmployeePerson);
 

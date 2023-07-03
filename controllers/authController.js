@@ -11,6 +11,8 @@ const permissionOperations = require("../middleware/permissionCheck");
 const validateRequest = require('../middleware/validateRequest');
 const verifySignUp = require("../middleware/verifySignUp");
 const IdVerifications = require("../middleware/idVerifications");
+const nodemailer = require('nodemailer');
+
 
 
 exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
@@ -92,7 +94,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
             }
         });
 
-        res.send(employee);
+        res.send("success");
     } catch (err) {
         next(err);
     }
@@ -154,25 +156,60 @@ exports.signIn = async (req, res) => {
     });
 };
 
-
 exports.createInvite = [validateRequest(['CompanyId'], []), async (req, res, next) => {
-    const companyId = req.params.CompanyId;
-
-    await IdVerifications.companyExists({ CompanyId: companyId });
-
+    await IdVerifications.companyExists({ CompanyId: req.params.CompanyId });
     try {
-        const token = jwt.sign({ companyId }, config.secret, {
-            expiresIn: '1h'
-        });
-
-        await Invitation.create({
-            token,
-            CompanyId: companyId
-        });
-
-        // Return the token
-        res.json({ token });
+        res.json( {token : await generateToken(req.params.CompanyId)});
     } catch (err) {
         next(err);
     }
 }]
+
+exports.sendRegisterLinkViaEmail = [validateRequest(['CompanyId'], ['email']), async (req, res, next) => {
+    const email = req.body.email;
+    await IdVerifications.companyExists({ CompanyId: req.params.CompanyId });
+
+    try {
+        const token = await generateToken(req.params.CompanyId);
+        const link = `http://localhost:3001/userSignUp/${token}`;
+
+        const company = await Company.findByPk(req.params.CompanyId);
+
+        let transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'invoice.builder01@gmail.com',
+                pass: 'gsdcwojixhrrzxkw'
+            },
+        });
+
+        let info = await transporter.sendMail({
+            from: '"Invoice Builder" <invoice.builder01@gmail.com>', // Make sure to use the correct email here as well
+            to: email,
+            subject: 'Register Link',
+            text: `Register Link to ${company.firmName} company`,
+            html: `<b>Register Link to ${company.firmName} company</b><br><a href="${link}">Click to register</a>`,
+        });
+
+        res.status(200).send({message: "Email sent, id: " + info.messageId});
+    } catch (err) {
+        next(err);
+    }
+}];
+
+
+const generateToken = async (companyId) => {
+
+    const token = jwt.sign({ companyId }, config.secret, {
+        expiresIn: '1h'
+    });
+
+    await Invitation.create({
+        token,
+        CompanyId: companyId
+    });
+
+    return token;
+}

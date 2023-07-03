@@ -15,4 +15,6 @@ router.post("/employeeSignup/:token", controller.employeeSignup);
 
 router.get("/createInvite/:CompanyId", controller.createInvite)
 
+router.post ("/sendRegisterLinkViaEmail/:CompanyId", authorize, controller.sendRegisterLinkViaEmail)
+
 module.exports = router;
