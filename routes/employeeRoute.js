@@ -13,4 +13,6 @@ router.delete("/deleteEmployee/:EmployeeId", authorize, employeeController.delet
 
 router.post("/updateEmployeePerson/:id", authorize, employeeController.updateEmployeePerson);
 
+router.post("/updateEmployeePermissions/:EmployeeId", authorize, employeeController.updateEmployeePermissions);
+
 module.exports = router;

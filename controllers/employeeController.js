@@ -72,12 +72,6 @@ exports.updateEmployeePerson = [validateRequest(['id'], []), async (req, res, ne
             }]
         });
 
-        if (req.body.permission === "none") {
-            await permissionOperations.deleteAllPermissions({EmployeeId: req.params.id});
-        } else if (req.body.permission) {
-            await permissionOperations.updatePermission({EmployeeId: req.params.id, permission: req.body.permission});
-        }
-
         res.status(200).send(employee)
     } catch (err) {
         next(err);
@@ -102,6 +96,21 @@ exports.deleteEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
             }
         })
         res.sendStatus(200);
+    } catch (err) {
+        next(err);
+    }
+}]
+
+exports.updateEmployeePermissions = [validateRequest(['EmployeeId'], ['permissions']), async (req, res, next) => {
+    await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
+    try {
+        console.log(req.body)
+        if (req.body.permissions === []) {
+            await permissionOperations.deleteAllPermissions({EmployeeId: req.params.EmployeeId});
+        } else if (req.body) {
+            await permissionOperations.updatePermission({EmployeeId: req.params.EmployeeId, permissions: req.body.permissions});
+        }
+        res.send("success");
     } catch (err) {
         next(err);
     }
