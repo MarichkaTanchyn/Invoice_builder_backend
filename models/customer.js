@@ -14,7 +14,6 @@ const Customer = sequelize.define('Customer',{
         type: Sequelize.STRING,
         allowNull: true
     },
-    address: Sequelize.STRING,
     country: {
         type: Sequelize.STRING,
         allowNull: false
@@ -28,7 +27,7 @@ const Customer = sequelize.define('Customer',{
         allowNull: false
     },
     nip: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: true
     }
 });

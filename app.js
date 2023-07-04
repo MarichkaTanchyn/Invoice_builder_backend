@@ -22,6 +22,7 @@ const invoiceRoute = require('./routes/invoiceRoute');
 const invoiceDraftRoute = require('./routes/invoiceDraftRoute');
 const csvRoute = require('./routes/csvRoute');
 const productRoute = require('./routes/productsRoute');
+const customerRoute = require('./routes/customerRoute');
 const errorHandler = require('./middleware/errorHandler');
 
 
@@ -102,5 +103,6 @@ app.use(invoiceRoute);
 app.use(invoiceDraftRoute);
 app.use(csvRoute);
 app.use(productRoute);
+app.use(customerRoute);
 
 app.use(errorHandler);

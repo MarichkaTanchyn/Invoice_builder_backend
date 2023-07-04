@@ -64,20 +64,8 @@ db.person.hasMany(db.customer, {onDelete: 'CASCADE', hooks: true});
 db.customer.belongsTo(db.person);
 
 // COMPANY & CUSTOMER
-db.company.belongsToMany(db.customer, {
-    through: "company_customers",
-    foreignKey: "companyId",
-    otherKey: "customerId",
-    onDelete: "cascade",
-    hooks: true
-});
-db.customer.belongsToMany(db.company, {
-    through: "company_customers",
-    foreignKey: "customerId",
-    otherKey: "companyId",
-    onDelete: "cascade",
-    hooks: true
-});
+db.company.hasMany(db.customer, {onDelete: 'CASCADE', hooks: true});
+db.customer.belongsTo(db.company);
 
 // CATEGORY TO CATEGORY
 db.category.hasMany(db.category, { as: 'subCategories', foreignKey: 'parentId' });
