@@ -26,9 +26,6 @@ const authorize = async (req, res, next) => {
             return res.status(401).send({ message: "Session not found in database!" });
         }
 
-        // Save the decoded user ID in the request for later use
-        req.userId = decoded.id;
-
         // Call the next middleware function
         next();
     });

@@ -14,6 +14,9 @@ const Employee = sequelize.define("Employee", {
     },
     password: {
         type: Sequelize.STRING
+    },
+    accepted: {
+        type: Sequelize.BOOLEAN
     }
 });
 

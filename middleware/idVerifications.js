@@ -49,6 +49,7 @@ const inviteValid = async ({token}) => {
     let invitation = await Invitation.findOne({where: {token}});
     // check if invitation was created more than 1 our ago
     if (!invitation || (new Date() - invitation.createdAt) > 3600000) {
+        //TODO: do not throw error
         throw new Error("Invitation expired");
     }
     return true;
