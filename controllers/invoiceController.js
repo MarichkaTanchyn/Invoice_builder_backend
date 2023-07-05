@@ -2,6 +2,7 @@ const Invoice = require('../models/invoice');
 const InvoiceDraft = require('../models/invoiceDraft');
 const Employee = require('../models/employee');
 const Person = require('../models/person');
+const Customer = require('../models/customer');
 const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
 const validateRequest = require('../middleware/validateRequest');
@@ -21,40 +22,69 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
             invoices = await Invoice.findAll({
                 where: {
                     CompanyId
-                }, include: [{
-                    model: Employee, include: [{
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }]
-                }]
+                }, include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
             });
             drafts = await InvoiceDraft.findAll({
                 where: {
                     CompanyId
-                }, include: [{
-                    model: Employee, include: [{
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }]
-                }]
+                }, include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
             });
             documents = [...invoices, ...drafts];
         } else {
             invoices = await Invoice.findAll({
                 where: {
                     EmployeeId, CompanyId
-                }, include: [{
-                    model: Employee, include: [{
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }]
-                }]
+                },
+                include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
             });
             drafts = await InvoiceDraft.findAll({
                 where: {
                     EmployeeId, CompanyId
-                }, include: [{
-                    model: Employee, include: [{
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }]
-                }]
+                }, include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
             });
             documents = [...invoices, ...drafts];
         }
@@ -85,6 +115,7 @@ exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, n
             status: req.body.status,
             typeOfDocument: req.body.typeOfDocument,
             invoiceFileLink: req.body.invoiceFileLink,
+            CustomerId: req.body.CustomerId,
             EmployeeId: req.params.EmployeeId,
             CompanyId: employee[0].Person.CompanyId
         }
@@ -150,4 +181,49 @@ exports.updateInvoice = [validateRequest(['InvoiceId'], []), async (req, res, ne
     } catch (err) {
         next(err);
     }
+}]
+
+exports.getCustomerInvoices = [validateRequest(['CustomerId'], []), async (req, res, next) => {
+
+        await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
+        try {
+            let documents = [];
+            let invoices = await Invoice.findAll({
+                where: {
+                    CustomerId: req.params.CustomerId
+                }, include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
+            })
+            let drafts = await InvoiceDraft.findAll({
+                where: {
+                    CustomerId: req.params.CustomerId
+                },  include: [
+                    {
+                        model: Employee,
+                        include: {
+                            model: Person,
+                            attributes: ['firstName', 'lastName']
+                        }
+                    },
+                    {
+                        model: Customer,
+                    }
+                ]
+            })
+            documents = [...invoices, ...drafts];
+            res.status(200).send(documents)
+        } catch (err) {
+            next(err);
+        }
+
 }]

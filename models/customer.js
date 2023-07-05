@@ -29,6 +29,9 @@ const Customer = sequelize.define('Customer',{
     nip: {
         type: Sequelize.STRING,
         allowNull: true
+    },
+    address: {
+        type: Sequelize.STRING,
     }
 });
 

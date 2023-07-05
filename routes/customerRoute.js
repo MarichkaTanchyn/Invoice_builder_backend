@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get("/getCompanyCustomers/:CompanyId", authorize, customerController.getCompanyCustomers);
 
+router.get("/getCustomer/:CustomerId", authorize, customerController.getCustomer);
+
 router.post("/addCustomer/:CompanyId", authorize, customerController.addCustomer);
 
 module.exports = router;

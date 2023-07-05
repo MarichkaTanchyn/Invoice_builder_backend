@@ -17,6 +17,14 @@ db.product = require('./product');
 db.session = require('./session');
 db.invitation = require('./invitation');
 
+// Customer & Invoice
+db.customer.hasMany(db.invoice, {onDelete: 'CASCADE', hooks: true});
+db.invoice.belongsTo(db.customer);
+
+// Customer & Invoice Draft
+db.customer.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
+db.invoiceDraft.belongsTo(db.customer);
+
 // COMPANY & INVITATION
 db.company.hasMany(db.invitation, {onDelete: 'CASCADE', hooks: true});
 db.invitation.belongsTo(db.company);
