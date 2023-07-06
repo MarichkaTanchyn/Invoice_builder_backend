@@ -3,7 +3,7 @@ const Customer = require("../models/customer");
 const Person = require("../models/person")
 const IdVerifications = require("../middleware/idVerifications");
 
-exports.getCompanyCustomers = [validateRequest(['CompanyId'],[]),  async (req, res, next) => {
+exports.getCompanyCustomers = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     try {
         await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
         const Customers = await Customer.findAll({
@@ -22,7 +22,7 @@ exports.getCompanyCustomers = [validateRequest(['CompanyId'],[]),  async (req, r
 
 }]
 
-exports.addCustomer = [validateRequest(['CompanyId', ],[]), async (req, res, next) => {
+exports.addCustomer = [validateRequest(['CompanyId',], []), async (req, res, next) => {
     try {
         await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
 
@@ -38,11 +38,11 @@ exports.addCustomer = [validateRequest(['CompanyId', ],[]), async (req, res, nex
             address: req.body.address,
             CompanyId: req.params.CompanyId,
             Person: {
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                middleName: req.body.middleName,
-                phoneNumber: req.body.phoneNumber,
-                email: req.body.email,
+                firstName: req.body.Person.firstName,
+                lastName: req.body.Person.lastName,
+                middleName: req.body.Person.middleName,
+                phoneNumber: req.body.Person.phoneNumber,
+                email: req.body.Person.email,
                 CompanyId: req.params.CompanyId
             }
         }, {
@@ -55,18 +55,55 @@ exports.addCustomer = [validateRequest(['CompanyId', ],[]), async (req, res, nex
     }
 }]
 
-exports.getCustomer = [validateRequest(['CustomerId', ],[]), async (req, res, next) => {
+exports.getCustomer = [validateRequest(['CustomerId',], []), async (req, res, next) => {
     try {
         await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
-        const customer = await Customer.findByPk(req.params.CustomerId, {
-            include: [{
-                model: Person, required: true
-            }]
-
-        });
+        const customer = await findCustomerWithPerson(req.params.CustomerId);
         res.status(200).send(customer);
     } catch (err) {
         next(err);
     }
 }]
 
+
+exports.updateCustomer = [
+    validateRequest(['CustomerId'], []),
+    async (req, res, next) => {
+
+        const { params, body } = req;
+        const { CustomerId } = params;
+        const { name, description, companyNumber, country, city, street, postalCode, nip, address, Person } = body;
+        const { firstName, lastName, middleName, phoneNumber, email } = Person;
+
+        try {
+            await IdVerifications.customerExists({ CustomerId });
+
+            // Get the customer instance
+            let customerInstance = await findCustomerWithPerson(CustomerId);
+
+            // If no customer instance is found, return an error
+            if (!customerInstance) {
+                res.status(404).send({ error: 'Customer not found' });
+                return;
+            }
+
+            // Update the customer and person instance
+            await customerInstance.update({ name, description, companyNumber, country, city, street, postalCode, nip, address });
+            await customerInstance.Person.update({ firstName, lastName, middleName, phoneNumber, email });
+
+            // Fetch the updated customer
+            let updatedCustomer = await findCustomerWithPerson(CustomerId);
+
+            // Send updated customer as the response
+            res.status(200).send(updatedCustomer);
+        } catch (err) {
+            next(err);
+        }
+    },
+];
+
+const findCustomerWithPerson = async (customerId) => {
+    return await Customer.findByPk(customerId,{
+        include: [Person],
+    });
+};

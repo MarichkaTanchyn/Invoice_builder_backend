@@ -10,4 +10,6 @@ router.get("/getCustomer/:CustomerId", authorize, customerController.getCustomer
 
 router.post("/addCustomer/:CompanyId", authorize, customerController.addCustomer);
 
+router.post("/updateCustomer/:CustomerId", authorize, customerController.updateCustomer);
+
 module.exports = router;
