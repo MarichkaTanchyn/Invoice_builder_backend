@@ -64,6 +64,42 @@ exports.getCategories = [validateRequest(['CompanyId'], []), async (req, res, ne
 }];
 
 
+exports.getCategoriesWithSubcategories = [validateRequest(['CompanyId'],[]), async (req, res, next) => {
+    await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
+    try {
+        const categories = await Category.findAll({
+            where: {
+                CompanyId: req.params.CompanyId
+            },
+            order: [
+                ['name', 'ASC']
+            ]
+        });
+
+        const groupedCategories = groupCategories(categories);
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(groupedCategories));
+        return res;
+
+    } catch (err) {
+        next(err);
+    }
+
+}]
+
+function groupCategories(categories) {
+    let plainCategories = categories.map(c => c.toJSON());
+
+    let sortedCategories = plainCategories.filter(c => !c.parentId);
+
+    sortedCategories.forEach(cat => {
+        cat.Subcategories = plainCategories.filter(subCat => subCat.parentId === cat.id);
+    });
+
+    return sortedCategories;
+}
+
+
 function sortCategories(categories) {
     const categoriesWithNoParents = categories.filter(category => category.parentId === null);
     const categoriesWithParents = categories.filter(category => category.parentId !== null);

@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get("/getCategories/:CompanyId", authorize, categoryController.getCategories)
 
+router.get("/getCategoriesWithSubcategories/:CompanyId", authorize, categoryController.getCategoriesWithSubcategories)
+
 router.post("/addCategories/:CompanyId", authorize, categoryController.addCategories);
 
 router.delete("/deleteCategory/:CategoryId", authorize, categoryController.deleteCategory);
