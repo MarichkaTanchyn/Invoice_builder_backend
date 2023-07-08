@@ -65,6 +65,18 @@ exports.getProducts = [validateRequest(['CategoryId'], []), async (req, res, nex
     }
 }]
 
+exports.getProduct = [validateRequest(['ProductId'], []), async (req, res, next) => {
+    try {
+        await IdVerifications.productExists({ProductId: req.params.ProductId});
+        const products = await Product.findByPk(req.params.ProductId,{
+            attributes: ['id', 'name', 'nameColumnName', 'price', 'description', 'priceColumnName', 'descriptionColumnName', 'other']
+        });
+        res.json(products);
+    } catch (err) {
+        next(err);
+    }
+}]
+
 exports.updateProducts = [validateRequestBody , async (req, res, next) => {
 
     try {

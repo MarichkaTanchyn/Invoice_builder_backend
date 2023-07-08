@@ -9,6 +9,8 @@ router.post("/addProduct/:CategoryId",  authorize,productController.addProduct);
 
 router.get("/getCategoryProducts/:CategoryId", authorize, productController.getProducts);
 
+router.get("/getProduct/:ProductId", authorize, productController.getProduct);
+
 router.post("/updateProducts", authorize, productController.updateProducts);
 
 router.delete("/deleteProduct/:ProductId", authorize, productController.deleteProduct);

@@ -5,6 +5,7 @@ const InvoiceDraft = require("../models/invoiceDraft");
 const Category = require("../models/category");
 const Invitation = require("../models/invitation");
 const Customer = require("../models/customer");
+const Product = require("../models/product");
 
 const employeeExists = async ({EmployeeId}) => {
     let employee = await Employee.findByPk(EmployeeId);
@@ -54,6 +55,14 @@ const customerExists = async ({CustomerId}) => {
     return true;
 }
 
+const productExists = async ({ProductId}) => {
+    let product = await Product.findByPk(ProductId);
+    if (!product) {
+        throw new Error("Customer doesn't exist");
+    }
+    return true;
+}
+
 const inviteValid = async ({token}) => {
     let invitation = await Invitation.findOne({where: {token}});
     // check if invitation was created more than 1 our ago
@@ -71,7 +80,8 @@ const IdVerifications = {
     invoiceDraftExists: invoiceDraftExists,
     categoryExists: categoryExists,
     customerExists: customerExists,
-    inviteValid: inviteValid
+    inviteValid: inviteValid,
+    productExists: productExists
 }
 
 module.exports = IdVerifications;
