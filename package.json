@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "-": "^0.0.1",
+    "aws-sdk": "^2.1413.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
@@ -35,6 +36,7 @@
     "sequelize": "^6.29.0",
     "sequelize-cli": "^6.4.1",
     "sharp": "^0.30.7",
+    "uuid": "^9.0.0",
     "xlsx": "^0.18.5"
   }
 }

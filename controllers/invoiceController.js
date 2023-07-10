@@ -8,7 +8,7 @@ const IdVerifications = require("../middleware/idVerifications");
 const validateRequest = require('../middleware/validateRequest');
 const puppeteer = require('puppeteer');
 const {generatePdf} = require("../middleware/generatePdf");
-
+const {createFile} = require("../util/amazonS3");
 
 
 exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), async (req, res, next) => {
@@ -25,69 +25,48 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
             invoices = await Invoice.findAll({
                 where: {
                     CompanyId
-                }, include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
+                }, include: [{
+                    model: Employee, include: {
+                        model: Person, attributes: ['firstName', 'lastName']
                     }
-                ]
+                }, {
+                    model: Customer,
+                }]
             });
             drafts = await InvoiceDraft.findAll({
                 where: {
                     CompanyId
-                }, include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
+                }, include: [{
+                    model: Employee, include: {
+                        model: Person, attributes: ['firstName', 'lastName']
                     }
-                ]
+                }, {
+                    model: Customer,
+                }]
             });
             documents = [...invoices, ...drafts];
         } else {
             invoices = await Invoice.findAll({
                 where: {
                     EmployeeId, CompanyId
-                },
-                include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
+                }, include: [{
+                    model: Employee, include: {
+                        model: Person, attributes: ['firstName', 'lastName']
                     }
-                ]
+                }, {
+                    model: Customer,
+                }]
             });
             drafts = await InvoiceDraft.findAll({
                 where: {
                     EmployeeId, CompanyId
-                }, include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
+                }, include: [{
+                    model: Employee, include: {
+                        model: Person, attributes: ['firstName', 'lastName']
                     }
-                ]
+                }, {
+                    model: Customer,
+                }]
             });
             documents = [...invoices, ...drafts];
         }
@@ -97,35 +76,41 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
     }
 }]
 
-exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
+exports.createInvoice = [validateRequest([], []), async (req, res, next) => {
 
+
+
+    await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
+    let employee = await Employee.findAll({
+        include: {
+            model: Person, required: true, where: {
+                id: req.params.EmployeeId
+            }
+        },
+    })
     try {
-        const pdf = await generatePdf(req.body[0].html);
-    // await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
-    // let employee = await Employee.findAll({
-    //     include: {
-    //         model: Person, required: true, where: {
-    //             id: req.params.EmployeeId
-    //         }
-    //     },
-    // })
-    // try {
-    //     let invoice = {
-    //         invoiceNumber: req.body.invoiceNumber,
-    //         creationDate: req.body.creationDate,
-    //         dueDate: req.body.dueDate,
-    //         validTo: req.body.validTo,
-    //         totalAmount: req.body.totalAmount,
-    //         status: req.body.status,
-    //         typeOfDocument: req.body.typeOfDocument,
-    //         invoiceFileLink: req.body.invoiceFileLink,
-    //         CustomerId: req.body.CustomerId,
-    //         EmployeeId: req.params.EmployeeId,
-    //         CompanyId: employee[0].Person.CompanyId
-    //     }
-    //     invoice = await Invoice.create(invoice, {validate: true});
-    //     res.status(200).json({invoice});
 
+        const htmlString = req.body[0].html;
+        const pdf = await generatePdf(htmlString);
+        const {Location, Key} = await createFile(pdf, req.params.id);
+
+
+
+        // let invoice = {
+        //     invoiceNumber: req.body.invoiceNumber,
+        //     creationDate: req.body.creationDate,
+        //     dueDate: req.body.dueDate,
+        //     validTo: req.body.validTo,
+        //     totalAmount: req.body.totalAmount,
+        //     status: req.body.status,
+        //     typeOfDocument: req.body.typeOfDocument,
+        //     invoiceFileLink: req.body.invoiceFileLink,
+        //     CustomerId: req.body.CustomerId,
+        //     EmployeeId: req.params.EmployeeId,
+        //     CompanyId: employee[0].Person.CompanyId
+        // }
+        // invoice = await Invoice.create(invoice, {validate: true});
+        res.status(200).json(Key);
 
     } catch (error) {
         res.status(500).send({
@@ -191,45 +176,35 @@ exports.updateInvoice = [validateRequest(['InvoiceId'], []), async (req, res, ne
 
 exports.getCustomerInvoices = [validateRequest(['CustomerId'], []), async (req, res, next) => {
 
-        await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
-        try {
-            let documents = [];
-            let invoices = await Invoice.findAll({
-                where: {
-                    CustomerId: req.params.CustomerId
-                }, include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
-                    }
-                ]
-            })
-            let drafts = await InvoiceDraft.findAll({
-                where: {
-                    CustomerId: req.params.CustomerId
-                },  include: [
-                    {
-                        model: Employee,
-                        include: {
-                            model: Person,
-                            attributes: ['firstName', 'lastName']
-                        }
-                    },
-                    {
-                        model: Customer,
-                    }
-                ]
-            })
-            documents = [...invoices, ...drafts];
-            res.status(200).send(documents)
-        } catch (err) {
-            next(err);
-        }
+    await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
+    try {
+        let documents = [];
+        let invoices = await Invoice.findAll({
+            where: {
+                CustomerId: req.params.CustomerId
+            }, include: [{
+                model: Employee, include: {
+                    model: Person, attributes: ['firstName', 'lastName']
+                }
+            }, {
+                model: Customer,
+            }]
+        })
+        let drafts = await InvoiceDraft.findAll({
+            where: {
+                CustomerId: req.params.CustomerId
+            }, include: [{
+                model: Employee, include: {
+                    model: Person, attributes: ['firstName', 'lastName']
+                }
+            }, {
+                model: Customer,
+            }]
+        })
+        documents = [...invoices, ...drafts];
+        res.status(200).send(documents)
+    } catch (err) {
+        next(err);
+    }
 
 }]
