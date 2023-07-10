@@ -1,6 +1,5 @@
 const validateRequest = require('../middleware/validateRequest');
 
-
 exports.uploadFile = [validateRequest(['CompanyId'], []), async (req, res, next) => {
     if (!req.file) {
         res.status(400).json({message: 'No file uploaded'});
@@ -13,7 +12,4 @@ exports.uploadFile = [validateRequest(['CompanyId'], []), async (req, res, next)
         next(err);
     }
 }]
-
-
-
 

@@ -35,17 +35,17 @@ app.use(cors({
     origin: 'http://localhost:3001'
 }));
 
-function initial() {
-    Permission.create({
+async function initial() {
+    await Permission.create({
         id: 1, name: "all_invoices_access"
     });
-    Permission.create({
+    await Permission.create({
         id: 2, name: "category_management"
     });
-    Permission.create({
+    await Permission.create({
         id: 3, name: "products_management"
     });
-    Permission.create({
+    await Permission.create({
         id: 4, name: "admin"
     });
 }

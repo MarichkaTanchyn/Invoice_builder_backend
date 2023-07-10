@@ -8,5 +8,4 @@ const {authorize} = require("../middleware/authJwt");
 
 router.post("/uploadFile/:CompanyId", [upload.single('file'), authorize], fileController.uploadFile);
 
-
 module.exports = router;
