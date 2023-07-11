@@ -1,12 +1,10 @@
 const Invoice = require('../models/invoice');
-const InvoiceDraft = require('../models/invoiceDraft');
 const Employee = require('../models/employee');
 const Person = require('../models/person');
 const Customer = require('../models/customer');
 const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
 const validateRequest = require('../middleware/validateRequest');
-const puppeteer = require('puppeteer');
 const {generatePdf} = require("../middleware/generatePdf");
 const {createFile} = require("../util/amazonS3");
 
@@ -20,7 +18,7 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
         //todo: add employee name and surname to response
 
         let hasPermission = await permissionOperations.hasPermission(EmployeeId, "all_invoices_access")
-        let invoices, drafts, documents;
+        let invoices;
         if (hasPermission) {
             invoices = await Invoice.findAll({
                 where: {
@@ -33,18 +31,7 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
                     model: Customer,
                 }]
             });
-            drafts = await InvoiceDraft.findAll({
-                where: {
-                    CompanyId
-                }, include: [{
-                    model: Employee, include: {
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }
-                }, {
-                    model: Customer,
-                }]
-            });
-            documents = [...invoices, ...drafts];
+
         } else {
             invoices = await Invoice.findAll({
                 where: {
@@ -57,28 +44,14 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
                     model: Customer,
                 }]
             });
-            drafts = await InvoiceDraft.findAll({
-                where: {
-                    EmployeeId, CompanyId
-                }, include: [{
-                    model: Employee, include: {
-                        model: Person, attributes: ['firstName', 'lastName']
-                    }
-                }, {
-                    model: Customer,
-                }]
-            });
-            documents = [...invoices, ...drafts];
         }
-        res.status(200).json({documents});
+        res.status(200).json({invoices});
     } catch (err) {
         next(err);
     }
 }]
 
-exports.createInvoice = [validateRequest([], []), async (req, res, next) => {
-
-
+exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
 
     await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     let employee = await Employee.findAll({
@@ -93,7 +66,6 @@ exports.createInvoice = [validateRequest([], []), async (req, res, next) => {
         const htmlString = req.body[0].html;
         const pdf = await generatePdf(htmlString);
         const {Location, Key} = await createFile(pdf, req.params.id);
-
 
 
         // let invoice = {
@@ -178,7 +150,6 @@ exports.getCustomerInvoices = [validateRequest(['CustomerId'], []), async (req, 
 
     await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
     try {
-        let documents = [];
         let invoices = await Invoice.findAll({
             where: {
                 CustomerId: req.params.CustomerId
@@ -190,19 +161,7 @@ exports.getCustomerInvoices = [validateRequest(['CustomerId'], []), async (req, 
                 model: Customer,
             }]
         })
-        let drafts = await InvoiceDraft.findAll({
-            where: {
-                CustomerId: req.params.CustomerId
-            }, include: [{
-                model: Employee, include: {
-                    model: Person, attributes: ['firstName', 'lastName']
-                }
-            }, {
-                model: Customer,
-            }]
-        })
-        documents = [...invoices, ...drafts];
-        res.status(200).send(documents)
+        res.status(200).send(invoices)
     } catch (err) {
         next(err);
     }

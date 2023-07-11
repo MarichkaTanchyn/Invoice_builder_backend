@@ -8,15 +8,19 @@ const Invoice = sequelize.define('Invoice', {
         allowNull: false,
         primaryKey: true
     },
-    invoiceNumber: {
+    documentNumber: {
         type: Sequelize.STRING,
         allowNull: false
     },
-    creationDate: {
-        type: Sequelize.DATE,
+    currency: {
+        type: Sequelize.STRING,
         allowNull: false
     },
-    dueDate: {
+    paymentMethod: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    validFrom: {
         type: Sequelize.DATE,
         allowNull: false
     },
@@ -28,8 +32,11 @@ const Invoice = sequelize.define('Invoice', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    paidAmount : {
+        type: Sequelize.INTEGER
+    },
     status: Sequelize.STRING,
-    typeOfDocument: Sequelize.STRING,
+    documentType: Sequelize.STRING,
     invoiceFileLink: Sequelize.STRING
 });
 

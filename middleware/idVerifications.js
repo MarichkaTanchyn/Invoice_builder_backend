@@ -1,7 +1,6 @@
 const Employee = require("../models/employee");
 const Company = require("../models/company");
 const Invoice = require("../models/invoice");
-const InvoiceDraft = require("../models/invoiceDraft");
 const Category = require("../models/category");
 const Invitation = require("../models/invitation");
 const Customer = require("../models/customer");
@@ -31,13 +30,6 @@ const invoiceExists = async ({InvoiceId}) => {
     return true;
 }
 
-const invoiceDraftExists = async ({InvoiceDraftId}) => {
-    let invoiceDraft = await InvoiceDraft.findByPk(InvoiceDraftId);
-    if (!invoiceDraft) {
-        throw new Error("Invoice draft doesn't exist");
-    }
-    return true;
-}
 
 const categoryExists = async ({CategoryId}) => {
     let category = await Category.findByPk(CategoryId);
@@ -77,7 +69,6 @@ const IdVerifications = {
     employeeExists: employeeExists,
     companyExists: companyExists,
     invoiceExists: invoiceExists,
-    invoiceDraftExists: invoiceDraftExists,
     categoryExists: categoryExists,
     customerExists: customerExists,
     inviteValid: inviteValid,

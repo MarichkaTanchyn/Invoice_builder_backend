@@ -11,19 +11,16 @@ db.company = require("./company");
 db.person = require("./person");
 db.customer = require('./customer');
 db.invoice = require('./invoice');
-db.invoiceDraft = require('./invoiceDraft');
 db.category = require('./category');
 db.product = require('./product');
 db.session = require('./session');
 db.invitation = require('./invitation');
+db.invoiceProducts = require('./invoiceProducts');
 
 // Customer & Invoice
 db.customer.hasMany(db.invoice, {onDelete: 'CASCADE', hooks: true});
 db.invoice.belongsTo(db.customer);
 
-// Customer & Invoice Draft
-db.customer.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
-db.invoiceDraft.belongsTo(db.customer);
 
 // COMPANY & INVITATION
 db.company.hasMany(db.invitation, {onDelete: 'CASCADE', hooks: true});
@@ -55,9 +52,6 @@ db.employee.belongsToMany(db.permission, {
 db.company.hasMany(db.invoice, {onDelete: 'CASCADE', hooks: true});
 db.invoice.belongsTo(db.company);
 
-//COMPANY & INVOICE DRAFT
-db.company.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
-db.invoiceDraft.belongsTo(db.company);
 
 // COMPANY & PERSON
 db.company.hasMany(db.person, {onDelete: 'CASCADE', hooks: true});
@@ -79,7 +73,6 @@ db.customer.belongsTo(db.company);
 db.category.hasMany(db.category, { as: 'subCategories', foreignKey: 'parentId' });
 db.category.belongsTo(db.category, { as: 'parent', foreignKey: 'parentId' });
 
-
 // CATEGORY & COMPANY
 db.company.hasMany(db.category, {onDelete: 'CASCADE', hooks: true});
 db.category.belongsTo(db.company);
@@ -94,40 +87,21 @@ db.invoice.belongsTo(db.employee);
 
 // INVOICE & PRODUCT
 db.invoice.belongsToMany(db.product, {
-    through: "invoice_products",
+    through: db.invoiceProducts,
+    primaryKey: "invoiceId",
     foreignKey: "invoiceId",
     otherKey: "productId",
     onDelete: "cascade",
     hooks: true
 })
 db.product.belongsToMany(db.invoice, {
-    through: "invoice_products",
+    through: db.invoiceProducts,
     foreignKey: "productId",
+    primaryKey: "productId",
     otherKey: "invoiceId",
     onDelete: "cascade",
     hooks: true
 },)
-
-// INVOICE DRAFT & EMPLOYEE
-db.employee.hasMany(db.invoiceDraft, {onDelete: 'CASCADE', hooks: true});
-db.invoiceDraft.belongsTo(db.employee);
-
-//INVOICE DRAFT & PRODUCT
-db.invoiceDraft.belongsToMany(db.product, {
-    through: "invoiceDraft_products",
-    foreignKey: "invoiceDraftId",
-    otherKey: "productId",
-    onDelete: "cascade",
-    hooks: true
-})
-db.product.belongsToMany(db.invoice, {
-    through: "invoiceDraft_products",
-    foreignKey: "productId",
-    otherKey: "invoiceDraftId",
-    onDelete: "cascade",
-    hooks: true
-})
-
 
 db.PERMISSONS = ["user", "admin"];//TODO: change to different
 module.exports = db;
