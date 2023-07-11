@@ -1,6 +1,7 @@
 const Invoice = require('../models/invoice');
 const Employee = require('../models/employee');
 const Person = require('../models/person');
+const Product = require('../models/product');
 const Customer = require('../models/customer');
 const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
@@ -31,7 +32,6 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
                     model: Customer,
                 }]
             });
-
         } else {
             invoices = await Invoice.findAll({
                 where: {
@@ -54,36 +54,50 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
 exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
 
     await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
-    let employee = await Employee.findAll({
-        include: {
-            model: Person, required: true, where: {
-                id: req.params.EmployeeId
-            }
-        },
-    })
     try {
+        const body = req.body[0];
+        if (body.products && Array.isArray(body.products)) {
 
-        const htmlString = req.body[0].html;
-        const pdf = await generatePdf(htmlString);
-        const {Location, Key} = await createFile(pdf, req.params.id);
+            const htmlString = body.html;
+            const pdf = await generatePdf(htmlString);
+            const {Location, Key} = await createFile(pdf, req.params.id);
+
+            let invoice = await Invoice.create({
+                documentNumber: body.documentNumber,
+                currency: body.currency,
+                paymentMethod: body.paymentMethod,
+                validTo: body.validUntil,
+                validFrom: body.validFrom,
+                totalAmount: body.summary.totalAmount,
+                // status: body.status,
+                paidAmount: body.paid,
+                documentType: body.documentType,
+                invoiceFileLink: Location,
+                CustomerId: body.customer.id,
+                EmployeeId: body.employee.id,
+                CompanyId: body.companyDetails[0].id
+            },
+                {validate: true});
 
 
-        // let invoice = {
-        //     invoiceNumber: req.body.invoiceNumber,
-        //     creationDate: req.body.creationDate,
-        //     dueDate: req.body.dueDate,
-        //     validTo: req.body.validTo,
-        //     totalAmount: req.body.totalAmount,
-        //     status: req.body.status,
-        //     typeOfDocument: req.body.typeOfDocument,
-        //     invoiceFileLink: req.body.invoiceFileLink,
-        //     CustomerId: req.body.CustomerId,
-        //     EmployeeId: req.params.EmployeeId,
-        //     CompanyId: employee[0].Person.CompanyId
-        // }
-        // invoice = await Invoice.create(invoice, {validate: true});
-        res.status(200).json(Key);
+            for (let productData of body.products) {
+                const product = await Product.findByPk(productData.product.id);
+                if (product) {
+                    await invoice.addProduct(product, { through: {
+                            unit: productData.unit,
+                            amount: productData.amount,
+                            tax: productData.vat,
+                            discount: productData.discount
+                        } });
+                }
+            }
 
+            res.status(200).send("success");
+        } else {
+            res.status(400).send({
+                message: "Products can not be empty!"
+            });
+        }
     } catch (error) {
         res.status(500).send({
             message: error.message || "Some error occurred while creating INVOICE"
