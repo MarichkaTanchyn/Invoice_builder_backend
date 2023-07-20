@@ -40,30 +40,6 @@ exports.addCategories = [validateRequest(['CompanyId'], []), async (req, res, ne
     }
 }];
 
-
-exports.getCategories = [validateRequest(['CompanyId'], []), async (req, res, next) => {
-    await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
-    try {
-        const categories = await Category.findAll({
-            where: {
-                CompanyId: req.params.CompanyId
-            },
-            order: [
-                ['name', 'ASC']
-            ]
-        });
-
-        const sortedCategories = sortCategories(categories);
-
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(sortedCategories));
-        return res;
-    } catch (err) {
-        next(err);
-    }
-}];
-
-
 exports.getCategoriesWithSubcategories = [validateRequest(['CompanyId'],[]), async (req, res, next) => {
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {

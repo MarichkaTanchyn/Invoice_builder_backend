@@ -5,8 +5,6 @@ const {authorize} = require("../middleware/authJwt");
 
 const router = express.Router();
 
-router.get("/getCategories/:CompanyId", authorize, categoryController.getCategories)
-
 router.get("/getCategoriesWithSubcategories/:CompanyId", authorize, categoryController.getCategoriesWithSubcategories)
 
 router.post("/addCategories/:CompanyId", authorize, categoryController.addCategories);
