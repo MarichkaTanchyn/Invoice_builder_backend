@@ -13,6 +13,7 @@ const verifySignUp = require("../middleware/verifySignUp");
 const IdVerifications = require("../middleware/idVerifications");
 const nodemailer = require('nodemailer');
 const Permission = require("../models/permission");
+const {where} = require("sequelize");
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', port: 465, secure: true, auth: {
@@ -20,7 +21,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res) => {
+exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res, next) => {
 
     const emailIsValid = await verifySignUp.checkDuplicateEmail(req.body.email);
 
@@ -51,7 +52,7 @@ exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']),
 
                 res.send({"message": "success"})
             } else {
-                res.send(emailIsValid);
+                res.send({"message": "Email is not valid"});
             }
         } catch (err) {
             next(err);
@@ -60,52 +61,57 @@ exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']),
 }];
 
 
-exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), async (req, res) => {
+exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), async (req, res, next) => {
     await IdVerifications.inviteValid({token: req.params.token});
-    const emailVerified  =  await verifySignUp.checkDuplicateEmail(req.body.email);
+    const emailVerified = await verifySignUp.checkDuplicateEmail(req.body.email);
 
     try {
         if (!emailVerified) {
-        let invitation = await Invitation.findOne({
-            where: {
-                token: req.params.token
-            }
-        });
-
-        await IdVerifications.companyExists({CompanyId: invitation.CompanyId});
-
-        const company = await Company.findByPk(invitation.CompanyId);
-
-        const person = await Person.create({
-            CompanyId: invitation.CompanyId,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            middleName: req.body.middleName,
-            phoneNumber: req.body.phoneNumber,
-            email: req.body.email
-        }, {validate: true});
-
-        const tmp = await Employee.create({
-            PersonId: person.id, email: req.body.email, password: bcrypt.hashSync(req.body.password, 8), accepted: false
-        }, {validate: true});
-
-
-        let employees = await Employee.findAll({
-            include: [{
-                model: Permission, attributes: ['id', 'name'], through: {
-                    attributes: []
+            let invitation = await Invitation.findOne({
+                where: {
+                    token: req.params.token
                 }
-            }]
-        })
+            });
 
-        employees.map(employee => {
-            employee.Permissions.map(async permission => {
-                if (permission.name === "admin") {
-                    await transporter.sendMail({
-                        from: '"Invoice Builder" <invoice.builder01@gmail.com>',
-                        to: tmp.email,
-                        subject: 'New Employee Approval Request',
-                        text: `Dear Manager,
+            await IdVerifications.companyExists({CompanyId: invitation.CompanyId});
+
+            const company = await Company.findByPk(invitation.CompanyId);
+
+            const person = await Person.create({
+                CompanyId: invitation.CompanyId,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                middleName: req.body.middleName,
+                phoneNumber: req.body.phoneNumber,
+                email: req.body.email
+            }, {validate: true});
+
+            await Employee.create({
+                PersonId: person.id,
+                email: req.body.email,
+                password: bcrypt.hashSync(req.body.password, 8),
+                accepted: false
+            }, {validate: true});
+
+
+            let employees = await Employee.findAll({
+                include: [{
+                    model: Person, where: {CompanyId: invitation.CompanyId}, attributes: [], // Exclude person attributes if not necessary.
+                }, {
+                    model: Permission, attributes: ['id', 'name'], through: {
+                        attributes: []
+                    }
+                }]
+            });
+
+            employees.map(employee => {
+                employee.Permissions.map(async permission => {
+                    if (permission.name === "admin") {
+                        await transporter.sendMail({
+                            from: '"Invoice Builder" <invoice.builder01@gmail.com>',
+                            to: employee.email,
+                            subject: 'New Employee Approval Request',
+                            text: `Dear Manager,
 
                         A new employee, ${person.firstName} ${person.lastName} with the email ${person.email}, is requesting to join your ${company.firmName} company account.
                         
@@ -115,7 +121,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                         
                         Best regards,
                         The Invoice Builder Team`,
-                        html: `
+                            html: `
                             <div style="font-family: Arial, sans-serif; color: #333;">
                                 <h2 style="color: #2a7ae2;">New Employee Approval Request</h2>
                                 <p>Dear Manager,</p>
@@ -127,18 +133,18 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                                 <p>Best regards,</p>
                                 <p><strong>The Invoice Builder Team</strong></p>
                             </div>`,
-                    });
-                }
+                        });
+                    }
+                })
             })
-        })
 
-        await Invitation.destroy({
-            where: {
-                id: invitation.id
-            }
-        });
+            await Invitation.destroy({
+                where: {
+                    id: invitation.id
+                }
+            });
 
-        res.send("success");
+            res.send("success");
         } else {
             res.send(emailVerified);
         }
@@ -149,7 +155,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
 }]
 
 
-exports.signIn = [validateRequest([], ['email', 'password']), async (req, res) => {
+exports.signIn = [validateRequest([], ['email', 'password']), async (req, res, next) => {
     console.log(req.body)
     try {
 
@@ -265,7 +271,7 @@ exports.acceptEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
     try {
         await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
 
-         await Employee.update({
+        await Employee.update({
             accepted: true
         }, {
             where: {

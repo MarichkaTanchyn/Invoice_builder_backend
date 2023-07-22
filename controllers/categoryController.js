@@ -69,27 +69,18 @@ function groupCategories(categories) {
     let sortedCategories = plainCategories.filter(c => !c.parentId);
 
     sortedCategories.forEach(cat => {
-        cat.Subcategories = plainCategories.filter(subCat => subCat.parentId === cat.id);
+        cat.Subcategories = plainCategories.filter(subCat => {
+            if(subCat.parentId === cat.id){
+                // add the parentCategoryName property to the subcategory
+                subCat.parentCategoryName = cat.name;
+                return true;
+            } else {
+                return false;
+            }
+        });
     });
 
     return sortedCategories;
-}
-
-
-function sortCategories(categories) {
-    const categoriesWithNoParents = categories.filter(category => category.parentId === null);
-    const categoriesWithParents = categories.filter(category => category.parentId !== null);
-
-    return categoriesWithNoParents.sort(compareByName).flatMap(category => [
-        category,
-        ...categoriesWithParents
-            .filter(subCategory => subCategory.parentId === category.id)
-            .sort(compareByName)
-    ]);
-}
-
-function compareByName(a, b) {
-    return a.name.localeCompare(b.name);
 }
 
 exports.deleteCategory = [validateRequest(['CategoryId'], []), async (req, res, next) => {
