@@ -11,6 +11,8 @@ router.get("/getInvoice/:InvoiceId", authorize, invoiceController.getInvoice);
 
 router.get("/getCustomerInvoices/:CustomerId", authorize, invoiceController.getCustomerInvoices);
 
+router.get("/getInvoicePdf/:InvoiceId", authorize, invoiceController.getInvoicePdf);
+
 router.post("/createInvoice/:EmployeeId", authorize, invoiceController.createInvoice);
 
 router.delete("/deleteInvoice/:InvoiceId", authorize, invoiceController.deleteInvoice);

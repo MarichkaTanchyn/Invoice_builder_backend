@@ -7,7 +7,7 @@ const permissionOperations = require("../middleware/permissionCheck");
 const IdVerifications = require("../middleware/idVerifications");
 const validateRequest = require('../middleware/validateRequest');
 const {generatePdf} = require("../middleware/generatePdf");
-const {createFile} = require("../util/amazonS3");
+const {createFile, getFileFromS3} = require("../util/amazonS3");
 
 
 exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), async (req, res, next) => {
@@ -180,4 +180,23 @@ exports.getCustomerInvoices = [validateRequest(['CustomerId'], []), async (req, 
         next(err);
     }
 
+}]
+
+exports.getInvoicePdf = [validateRequest(['InvoiceId'] , []), async (req, res, next) => {
+    await IdVerifications.invoiceExists({InvoiceId: req.params.InvoiceId});
+    try {
+
+        const invoice = await Invoice.findByPk(req.params.InvoiceId)
+        const file = await getFileFromS3(invoice.invoiceFileLink);
+        if (!file) {
+            res.status(500).send("Unable to fetch file from S3.");
+            return;
+        }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename=invoice.pdf');
+
+        res.send(file);
+    } catch (err) {
+        next(err)
+    }
 }]

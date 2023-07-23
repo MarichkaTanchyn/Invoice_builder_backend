@@ -5,7 +5,6 @@ const { v4: uuidv4 } = require('uuid');
 const amazonS3 = new AWS.S3({
     accessKeyId: 'AKIA2OFMVC3TAFBULONP',
     secretAccessKey: '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',
-    // region: process.env.AWS_DEFAULT_REGION,
 });
 
 exports.createFile = async (file, id) => {
@@ -29,3 +28,19 @@ exports.createFile = async (file, id) => {
         throw new Error(error);
     }
 }
+
+exports.getFileFromS3 = async (url) => {
+    const Key = url.split("/").pop();
+    const params = {
+        Bucket: 'invoice-builder',
+        Key : Key,
+    };
+
+    try {
+        const data = await amazonS3.getObject(params).promise();
+        return data.Body;
+    } catch (error) {
+        console.error(`Failed to retrieve file from S3: ${error}`);
+        return null;
+    }
+};
