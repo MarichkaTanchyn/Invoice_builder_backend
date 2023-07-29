@@ -98,6 +98,9 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                 }]
             });
 
+            const link = `${process.env.FRONTEND_ORIGIN}/settings`
+
+
             employees.map(employee => {
                 employee.Permissions.map(async permission => {
                     if (permission.name === "admin") {
@@ -121,7 +124,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                                 <p>Dear Manager,</p>
                                 <p>A new employee, <strong>${person.firstName} ${person.lastName}</strong> with the email <strong>${person.email}</strong>, is requesting to join your ${company.firmName} company account.</p>
                                 <p>Please log in to your account settings to review and approve this request by clicking the button below:</p>
-                                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: 'inline-block', padding: '10px 20px', color: '#fff', backgroundColor: '#2a7ae2', textDecoration: 'none', borderRadius: '5px'}}>Go to Settings</a>
+                                <a href="${link}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;">Go to settings</a>
                                 <p>Once there, navigate to the 'Accounts' tab and click the 'Accept' button next to the user's information.</p>
                                 <p>If you have any questions or require further assistance, please do not hesitate to contact us.</p>
                                 <p>Best regards,</p>
@@ -278,6 +281,8 @@ exports.acceptEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
                 model: Person, required: true,
             }]
         });
+        const link = process.env.FRONTEND_ORIGIN;
+
 
         const company = await Company.findByPk(employee.Person.CompanyId);
 
@@ -298,7 +303,7 @@ exports.acceptEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
                 <h2 style="color: #2a7ae2;">Dear ${employee.firstName} ${employee.lastName},</h2>
                 <p>We are pleased to inform you that your account linked to <strong>${company.firmName}</strong> has been successfully activated.</p>
                 <p>You can now access your account by clicking the button below:</p>
-                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: 'inline-block', padding: '10px 20px', color: '#fff', backgroundColor: '#2a7ae2', textDecoration: 'none', borderRadius: '5px'}}>Login to Your Account</a>
+                <a href="${link}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;">Login to Your Account</a>
                 <p>If you have any questions or require further assistance, please do not hesitate to contact us.</p>
                 <p>Best regards,</p>
                 <p><strong>The Invoice Builder Team</strong></p>
