@@ -121,7 +121,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                                 <p>Dear Manager,</p>
                                 <p>A new employee, <strong>${person.firstName} ${person.lastName}</strong> with the email <strong>${person.email}</strong>, is requesting to join your ${company.firmName} company account.</p>
                                 <p>Please log in to your account settings to review and approve this request by clicking the button below:</p>
-                                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;}}>Go to Settings</a>
+                                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: 'inline-block', padding: '10px 20px', color: '#fff', backgroundColor: '#2a7ae2', textDecoration: 'none', borderRadius: '5px'}}>Go to Settings</a>
                                 <p>Once there, navigate to the 'Accounts' tab and click the 'Accept' button next to the user's information.</p>
                                 <p>If you have any questions or require further assistance, please do not hesitate to contact us.</p>
                                 <p>Best regards,</p>
