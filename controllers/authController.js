@@ -109,7 +109,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
 
                         A new employee, ${person.firstName} ${person.lastName} with the email ${person.email}, is requesting to join your ${company.firmName} company account.
                         
-                        Please log in to your account settings to review and approve this request: http://localhost:3001/settings
+                        Please log in to your account settings to review and approve this request: ${process.env.FRONTEND_ORIGIN}/settings
                         
                         Once there, navigate to the 'Accounts' tab and click the 'Accept' button next to the user's information.
                         
@@ -121,7 +121,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
                                 <p>Dear Manager,</p>
                                 <p>A new employee, <strong>${person.firstName} ${person.lastName}</strong> with the email <strong>${person.email}</strong>, is requesting to join your ${company.firmName} company account.</p>
                                 <p>Please log in to your account settings to review and approve this request by clicking the button below:</p>
-                                <a href="http://localhost:3001/settings" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;">Go to Settings</a>
+                                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;}}>Go to Settings</a>
                                 <p>Once there, navigate to the 'Accounts' tab and click the 'Accept' button next to the user's information.</p>
                                 <p>If you have any questions or require further assistance, please do not hesitate to contact us.</p>
                                 <p>Best regards,</p>
@@ -228,7 +228,7 @@ exports.sendRegisterLinkViaEmail = [validateRequest(['CompanyId'], ['email']), a
 
     try {
         const token = await generateToken(req.params.CompanyId);
-        const link = `http://localhost:3001/userSignUp/${token}`;
+        const link = `${process.env.FRONTEND_ORIGIN}/userSignUp/${token}`;
 
         const company = await Company.findByPk(req.params.CompanyId);
 
@@ -289,7 +289,7 @@ exports.acceptEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
 
             We are pleased to inform you that your account linked to ${company.firmName} has been successfully activated. 
 
-            You can now access your account by following this link: http://localhost:3001/login
+            You can now access your account by following this link: ${process.env.FRONTEND_ORIGIN}/login
 
             Best regards,
             The Invoice Builder Team`,
@@ -298,7 +298,7 @@ exports.acceptEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
                 <h2 style="color: #2a7ae2;">Dear ${employee.firstName} ${employee.lastName},</h2>
                 <p>We are pleased to inform you that your account linked to <strong>${company.firmName}</strong> has been successfully activated.</p>
                 <p>You can now access your account by clicking the button below:</p>
-                <a href="http://localhost:3001/login" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #2a7ae2; text-decoration: none; border-radius: 5px;">Login to Your Account</a>
+                <a href={`${process.env.FRONTEND_ORIGIN}/login`} style={{display: 'inline-block', padding: '10px 20px', color: '#fff', backgroundColor: '#2a7ae2', textDecoration: 'none', borderRadius: '5px'}}>Login to Your Account</a>
                 <p>If you have any questions or require further assistance, please do not hesitate to contact us.</p>
                 <p>Best regards,</p>
                 <p><strong>The Invoice Builder Team</strong></p>

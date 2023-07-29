@@ -59,11 +59,11 @@ try {
 
 
 sequelize
-    .sync({ force: true })
-    // .sync()
+    // .sync({ force: true })
+    .sync()
     .then(cart => {
         app.listen(process.env.PORT || 3000);
-        initial()
+        // initial()
         function deleteExpiredTokens() {
             let EXPIRATION_TIME = 86400000; // 24 hours in milliseconds
             const expirationDate = new Date(Date.now() - EXPIRATION_TIME);
