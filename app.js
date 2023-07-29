@@ -30,9 +30,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 // Parse JSON bodies
 app.use(bodyParser.json());
 
-app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN
-}));
+// app.use(cors({
+//     origin: process.env.FRONTEND_ORIGIN
+// }));
 
 async function initial() {
     await Permission.create({
