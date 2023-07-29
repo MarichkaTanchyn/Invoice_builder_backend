@@ -3,8 +3,8 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const amazonS3 = new AWS.S3({
-    accessKeyId: 'AKIA2OFMVC3TAFBULONP',
-    secretAccessKey: '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',
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
 });
 
 exports.createFile = async (file, id) => {
@@ -13,7 +13,7 @@ exports.createFile = async (file, id) => {
         const uniqueFilename = `${uuidv4()}-${filename}`; // Generate a unique filename
 
         const params = {
-            Bucket: 'invoice-builder',
+            Bucket: process.env.S3_BUCKET,
             Key: uniqueFilename,
             Body: fs.readFileSync(path),
         };
@@ -32,7 +32,7 @@ exports.createFile = async (file, id) => {
 exports.getFileFromS3 = async (url) => {
     const Key = url.split("/").pop();
     const params = {
-        Bucket: 'invoice-builder',
+        Bucket: process.env.S3_BUCKET,
         Key : Key,
     };
 

@@ -11,15 +11,9 @@ const permissionOperations = require("../middleware/permissionCheck");
 const validateRequest = require('../middleware/validateRequest');
 const verifySignUp = require("../middleware/verifySignUp");
 const IdVerifications = require("../middleware/idVerifications");
-const nodemailer = require('nodemailer');
 const Permission = require("../models/permission");
-const {where} = require("sequelize");
+const {transporter} = require("../util/nodemailer");
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', port: 465, secure: true, auth: {
-        user: 'invoice.builder01@gmail.com', pass: 'gsdcwojixhrrzxkw'
-    },
-});
 
 exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res, next) => {
 

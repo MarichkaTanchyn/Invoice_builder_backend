@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use(cors({
-    origin: 'http://localhost:3001'
+    origin: process.env.FRONTEND_ORIGIN
 }));
 
 async function initial() {
@@ -62,10 +62,10 @@ sequelize
     // .sync({ force: true })
     .sync()
     .then(cart => {
-        app.listen(3000);
+        app.listen(process.env.PORT || 3000);
         // initial()
         function deleteExpiredTokens() {
-            let EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
+            let EXPIRATION_TIME = 86400000; // 24 hours in milliseconds
             const expirationDate = new Date(Date.now() - EXPIRATION_TIME);
             Invitation.destroy({
                 where: {
