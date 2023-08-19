@@ -60,7 +60,7 @@ try {
 
 sequelize
     // .sync({ force: true })
-    // .sync()
+    .sync()
     .then(cart => {
         app.listen(process.env.PORT || 3000);
         // initial()
