@@ -1,24 +1,31 @@
 const puppeteer = require("puppeteer");
 
-
 exports.generatePdf = async (htmlString) => {
-    const browser = await puppeteer.launch({ headless: 'new' });
-    const page = await browser.newPage();
+    let browser;
 
-    await page.setContent(htmlString);
-    await page.emulateMediaType('screen');
+    try {
+        browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
 
-    const pdfPath = 'uploads/invoice.pdf';
-    await page.pdf({
-        path: pdfPath,
-        format: 'A4',
-        printBackground: true
-    });
+        await page.setContent(htmlString);
+        await page.emulateMediaType('screen');
 
-    await browser.close();
+        const pdfPath = 'uploads/invoice.pdf';
+        await page.pdf({
+            path: pdfPath,
+            format: 'A4',
+            printBackground: true
+        });
 
-    return {
-        path: pdfPath,
-        filename: 'invoice.pdf'
-    };
+        return {
+            path: pdfPath,
+            filename: 'invoice.pdf'
+        };
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        throw error;
+    } finally {
+        if (browser) await browser.close();
+    }
 }
