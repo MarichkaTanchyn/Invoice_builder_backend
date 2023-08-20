@@ -21,8 +21,7 @@ exports.createFile = async (file, id) => {
         const data = await amazonS3.upload(params).promise();
         fs.unlinkSync(path);
 
-        console.log(data);
-        return data;
+            return data;
     } catch (error) {
         fs.unlinkSync(file.path);
         throw new Error(error);
@@ -44,3 +43,6 @@ exports.getFileFromS3 = async (url) => {
         return null;
     }
 };
+
+
+

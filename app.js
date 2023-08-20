@@ -82,9 +82,6 @@ sequelize
                 });
         }
 
-        // Delete expired tokens right away
-        deleteExpiredTokens();
-
         // Then schedule the job to run every hour
         cron.schedule('0 * * * *', deleteExpiredTokens);
     })
