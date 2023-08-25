@@ -5,12 +5,8 @@ const validateRequestBody = require("../middleware/validateRequestBody");
 
 
 exports.addProduct = [validateRequest(['CategoryId'], []), validateRequestBody, async (req, res, next) => {
-
     try {
-        console.log(req.body);
-
         await IdVerifications.categoryExists({CategoryId: req.params.CategoryId});
-
         const newProduct = {
             name: req.body.name,
             nameColumnName: req.body.nameColumnName,
@@ -82,7 +78,7 @@ exports.updateProducts = [validateRequestBody , async (req, res, next) => {
     try {
         const products = req.body;
         for (const product of products) {
-            // await IdVerifications.productExists({ProductId: product.id});
+            await IdVerifications.productExists({ProductId: product.id});
             await Product.update(product, {
                 where: {
                     id: product.id,
@@ -102,7 +98,7 @@ exports.deleteProducts =[validateRequestBody, async (req, res, next) => {
     try {
         const productIds = req.body;
         for (const productId of productIds) {
-            // await IdVerifications.productExists({ProductId: productId});
+            await IdVerifications.productExists({ProductId: productId});
             await Product.destroy({
                 where: {
                     id: productId,
@@ -119,8 +115,7 @@ exports.deleteProducts =[validateRequestBody, async (req, res, next) => {
 }]
 
 exports.deleteProduct = [validateRequest(['ProductId'], []), async (req, res, next) => {
-
-    // await IdVerifications.productExists({ ProductId: req.params.ProductId });
+    await IdVerifications.productExists({ ProductId: req.params.ProductId });
     try {
         await Product.destroy({
             where: {
@@ -137,7 +132,6 @@ exports.deleteProduct = [validateRequest(['ProductId'], []), async (req, res, ne
 }]
 
 exports.deleteAllProducts = async (req, res) => {
-
     try {
         await Product.destroy({where: {},});
         res.send({

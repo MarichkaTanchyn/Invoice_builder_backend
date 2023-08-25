@@ -16,10 +16,7 @@ const {transporter} = require("../util/nodemailer");
 
 
 exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']), async (req, res, next) => {
-
     const emailIsValid = await verifySignUp.checkDuplicateEmail(req.body.email);
-
-    console.log(emailIsValid)
     if (req.body.token) {
     } else {
         try {
@@ -90,7 +87,7 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
 
             let employees = await Employee.findAll({
                 include: [{
-                    model: Person, where: {CompanyId: invitation.CompanyId}, attributes: [], // Exclude person attributes if not necessary.
+                    model: Person, where: {CompanyId: invitation.CompanyId}, attributes: [],
                 }, {
                     model: Permission, attributes: ['id', 'name'], through: {
                         attributes: []
@@ -153,7 +150,6 @@ exports.employeeSignup = [validateRequest(['token'], ['email', 'password']), asy
 
 
 exports.signIn = [validateRequest([], ['email', 'password']), async (req, res, next) => {
-    console.log(req.body)
     try {
 
         let employee = await Employee.findOne({

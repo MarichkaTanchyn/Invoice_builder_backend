@@ -6,7 +6,7 @@ exports.uploadFile = [validateRequest(['CompanyId'], []), async (req, res, next)
         return;
     }
     try {
-        const fileId = req.file.filename;  // multer automatically generates a unique filename
+        const fileId = req.file.filename;
         res.send(fileId);
     } catch (err) {
         next(err);

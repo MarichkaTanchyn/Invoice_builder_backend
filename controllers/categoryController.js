@@ -4,8 +4,6 @@ const validateRequest = require('../middleware/validateRequest');
 
 
 exports.addCategories = [validateRequest(['CompanyId'], []), async (req, res, next) => {
-
-    console.log(req.params);
     await IdVerifications.companyExists({CompanyId: req.params.CompanyId});
     try {
         const {withSubcategories, categories} = req.body;

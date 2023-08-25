@@ -104,7 +104,6 @@ exports.deleteEmployee = [validateRequest(['EmployeeId'], []), async (req, res, 
 exports.updateEmployeePermissions = [validateRequest(['EmployeeId'], ['permissions']), async (req, res, next) => {
     await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     try {
-        console.log(req.body)
         if (req.body.permissions === []) {
             await permissionOperations.deleteAllPermissions({EmployeeId: req.params.EmployeeId});
         } else if (req.body) {

@@ -4,7 +4,6 @@ const db = require("../models");
 const Session = db.session;
 
 const authorize = async (req, res, next) => {
-    // Get the token from the 'Authorization' header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
@@ -25,8 +24,6 @@ const authorize = async (req, res, next) => {
         if (!session) {
             return res.status(401).send({ message: "Session not found in database!" });
         }
-
-        // Call the next middleware function
         next();
     });
 

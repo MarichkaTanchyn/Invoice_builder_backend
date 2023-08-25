@@ -18,11 +18,11 @@ const Category = sequelize.define('Category', {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-            model: 'Categories', // Note that the table name is usually pluralized by Sequelize
+            model: 'Categories',
             key: 'id'
         },
-        onDelete: 'CASCADE', // Optional: CASCADE will delete subcategories when a parent is deleted
-        onUpdate: 'CASCADE'  // Optional: CASCADE will update subcategories when a parent is updated
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
     }
 });
 

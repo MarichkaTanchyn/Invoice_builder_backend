@@ -1,9 +1,7 @@
 require('dotenv').config();
-const path = require('path');
 const express = require('express');
 const sequelize = require('./util/database');
 const bodyParser = require("body-parser");
-const multer = require('multer');
 const app = express();
 const Permission = require('./models/permission');
 const cors = require('cors');
@@ -62,7 +60,8 @@ sequelize
     // .sync({ force: true })
     .sync()
     .then(cart => {
-        app.listen(process.env.PORT || 3000);
+        app.listen(process.env.PORT || 3001);
+
         // initial()
         function deleteExpiredTokens() {
             let EXPIRATION_TIME = 86400000; // 24 hours in milliseconds

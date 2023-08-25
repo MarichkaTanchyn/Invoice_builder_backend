@@ -102,6 +102,4 @@ db.product.belongsToMany(db.invoice, {
     onDelete: "cascade",
     hooks: true
 },)
-
-db.PERMISSONS = ["user", "admin"];//TODO: change to different
 module.exports = db;

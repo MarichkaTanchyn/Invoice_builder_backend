@@ -16,7 +16,6 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
 
         await IdVerifications.employeeExists({EmployeeId});
         await IdVerifications.companyExists({CompanyId});
-        //todo: add employee name and surname to response
 
         let hasPermission = await permissionOperations.hasPermission(EmployeeId, "all_invoices_access")
         let invoices;
@@ -52,7 +51,6 @@ exports.getAllDocuments = [validateRequest(['CompanyId', 'EmployeeId'], []), asy
 }]
 
 exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, next) => {
-
     await IdVerifications.employeeExists({EmployeeId: req.params.EmployeeId});
     try {
         const body = req.body[0];
@@ -64,18 +62,17 @@ exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, n
 
             let invoice = await Invoice.create({
                 documentNumber: body.documentNumber,
-                currency: body.currency,
+                currency: body.currency.value,
                 paymentMethod: body.paymentMethod,
                 validTo: body.validUntil,
                 validFrom: body.validFrom,
-                totalAmount: body.summary.totalGrossValue,
-                // status: body.status,
+                totalAmount: body.summary.totalAmount,
                 paidAmount: body.paid,
                 documentType: body.documentType,
                 invoiceFileLink: Location,
                 CustomerId: body.customer.id,
                 EmployeeId: body.employee.id,
-                CompanyId: body.companyDetails[0].id
+                CompanyId: body.companyDetails.id
             },
                 {validate: true});
 
