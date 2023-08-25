@@ -34,7 +34,6 @@ const getEmployeePermissions = async (EmployeeId) => {
 }
 
 const updatePermission = async ({ EmployeeId, permissions }) => {
-    // Fetch the Permission instances that match the names in the request body
     const permissionInstances = await Permission.findAll({
         where: {
             name: permissions
@@ -44,8 +43,6 @@ const updatePermission = async ({ EmployeeId, permissions }) => {
     if (permissionInstances.length !== permissions.length) {
         throw new Error('One or more permissions do not exist');
     }
-
-    // Get the employee instance
     const employee = await Employee.findByPk(EmployeeId);
 
     if (!employee) {

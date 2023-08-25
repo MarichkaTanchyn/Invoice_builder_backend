@@ -51,38 +51,72 @@ exports.processData = async (fileKey, headersRow, sheetName) => {
     return null;
 };
 
-
 exports.processSheetData = async (fileKey, fileHeaders, headersRow) => {
-    const workbook = await readFile(fileKey);
-    let data = [];
+    try {
+        const workbook = await readFile(fileKey);
+        const data = [];
 
-    for (let sheetName in fileHeaders) {
-        const worksheet = workbook.Sheets[sheetName];
-        if (worksheet) {
+        for (let sheetName in fileHeaders) {
+            const worksheet = workbook.Sheets[sheetName];
+            if (!worksheet) continue;
+
             const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: headersRow});
-            // Assume that the first row is the header
-            let headers = jsonData.shift();
-
-            const modifiedData = jsonData.map((row) => {
-                let obj = [];
-                row.forEach((cell, index) => {
-                    const originalColName = headers[index];
-                    const newHeader = fileHeaders[sheetName].find((h) => h.originalColName === originalColName);
-                    if (newHeader) {
-                        obj.push({
-                            [newHeader.column]: cell, useInInvoice: newHeader.useInInvoice, type: newHeader.dataType,
-                        });
-                    } else {
-                        obj.push({[originalColName]: cell});
-                    }
-                });
-                return obj;
-            });
-            data.push(modifiedData);
+            if (!jsonData) continue;
+            const modifiedData = processRows(jsonData, fileHeaders);
+            if (modifiedData) {
+                data.push(modifiedData);
+            }
         }
+        return data;
+    } catch (error) {
+        console.error(`An error occurred: ${error.message}`);
+        return null;
     }
+};
 
-    return data;
+const processRows = (jsonData, fileHeaders) => {
+    let processedRows = [];
+    let headers = jsonData.shift();
+    jsonData.map((row) => {
+        let obj = processRow(row, headers, fileHeaders);
+        processedRows.push(obj);
+    });
+    return processedRows;
+};
+
+const processRow = (row, headers, fileHeaders) => {
+    let obj = [];
+    Object.entries(row).forEach(([originalColName, cell], index) => {
+        const newHeader = fileHeaders[sheetName].find((h) => h.originalColName === originalColName);
+        if (newHeader) {
+            obj.push({
+                [newHeader.column]: cell,
+                useInInvoice: newHeader.useInInvoice,
+                type: newHeader.dataType,
+            });
+        } else {
+            obj.push({[originalColName]: cell});
+        }
+    });
+    return obj;
+};
+
+const modifyRowData = (row, headers, fileHeadersForSheet) => {
+    let obj = [];
+    row.forEach((cell, index) => {
+        const originalColName = headers[index];
+        const newHeader = fileHeaders[sheetName][0].columns.find((h) => h.originalColumn === originalColName);
+        if (newHeader) {
+            obj.push({
+                [newHeader.column]: cell,
+                useInInvoice: newHeader.useInInvoice,
+                type: newHeader.dataType,
+            });
+        } else {
+            obj.push({[originalColName]: cell});
+        }
+    });
+    return obj;
 };
 
 exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) => {
@@ -93,32 +127,14 @@ exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) 
         if (sheetName in sheetHeader) {
             const worksheet = workbook.Sheets[sheetName];
             if (worksheet) {
-
                 const headerValue = sheetHeader[sheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: headerValue})
-
-                // Assume that the first row is the header
                 let headers = jsonData.shift();
 
                 const modifiedData = jsonData.map((row) => {
-                    let obj = [];
-                    row.forEach((cell, index) => {
-                        const originalColName = headers[index];
-                        const newHeader = fileHeaders[sheetName][0].columns.find((h) => h.originalColumn === originalColName);
-                        if (newHeader) {
-                            obj.push({
-                                [newHeader.column]: cell,
-                                useInInvoice: newHeader.useInInvoice,
-                                type: newHeader.dataType,
-                            });
-                        } else {
-                            obj.push({[originalColName]: cell});
-                        }
-                    });
-                    return obj;
+                    return modifyRowData(row, headers, fileHeaders[sheetName][0]);
                 });
 
-                // Use categoryName as the key instead of sheetName
                 const categoryName = fileHeaders[sheetName][0].categoryName;
                 if (categoryName) {
                     categories[categoryName] = modifiedData;
@@ -129,41 +145,48 @@ exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) 
     return categories;
 };
 
+
 exports.validateSheetData = async (fileKey, fileHeaders, headersRow) => {
-    const workbook = await readFile(fileKey);
+    const workbook = await await readFile(fileKey);
 
     for (let sheetName in fileHeaders) {
         const worksheet = workbook.Sheets[sheetName];
         if (worksheet) {
             const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: headersRow});
-            let headers = jsonData.shift();
+            const headers = jsonData.shift();
 
             for (let row of jsonData) {
-                for (let index in row) {
-                    const cell = row[index];
-                    const originalColName = headers[index];
-                    const newHeader = fileHeaders[sheetName].find((h) => h.originalColName === originalColName);
-
-                    if (newHeader) {
-                        try {
-                            const validationResult = validateDataType(newHeader.dataType, cell, newHeader.column);
-                            if (validationResult) {
-                                // If there's an error, stop the processing and return the error message
-                                return validationResult;
-                            }
-                        } catch (error) {
-                            // If there's an exception, stop the processing and return the error message
-                            return `Error in sheet "${sheetName}", row ${Number(index) + 2}, column "${originalColName}": ${error.message}`;
-                        }
-                    }
+                const errors = validateRowData(row, headers, fileHeaders[sheetName]);
+                if (errors.length > 0) {
+                    return errors;
                 }
             }
         }
     }
-
-    // If all cells are valid, return null
     return null;
 };
+
+const validateRowData = (row, headers, fileHeadersForSheet) => {
+    let errors = [];
+    for (let index in row) {
+        const cell = row[index];
+        const originalColName = headers[index];
+        const newHeader = fileHeadersForSheet.find((h) => h.originalColName === originalColName);
+
+        if (newHeader) {
+            try {
+                const validationResult = validateDataType(newHeader.dataType, cell, newHeader.column);
+                if (validationResult) {
+                    errors.push(validationResult);
+                }
+            } catch (error) {
+                errors.push(`Error in row ${Number(index) + 2}, column "${originalColName}": ${error.message}`);
+            }
+        }
+    }
+    return errors;
+};
+
 
 
 function validateDataType(dataType, value, newColumnName) {
@@ -188,77 +211,71 @@ function validateDataType(dataType, value, newColumnName) {
 
 exports.validateAllSheetsData = async (fileKey, fileHeaders, sheetHeader) => {
     const workbook = await readFile(fileKey);
+    let allErrors = [];
 
-    let errors = [];
     for (let sheetName in fileHeaders) {
         if (sheetName in sheetHeader) {
             const worksheet = workbook.Sheets[sheetName];
             if (worksheet) {
                 const headerValue = sheetHeader[sheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: headerValue});
-                let headers = jsonData.shift();
+                const headers = jsonData.shift();
 
                 for (let row of jsonData) {
-                    for (let index in row) {
-                        const cell = row[index];
-                        const originalColName = headers[index];
-                        const newHeader = fileHeaders[sheetName].find((h) => h.originalColName === originalColName);
-
-                        if (newHeader) {
-                            try {
-                                const validationResult = validateDataType(newHeader.dataType, cell, newHeader.column);
-                                if (validationResult) {
-                                    // If there's an error, add it to the errors array
-                                    errors.push(`Error in sheet <b> "${sheetName}" </b>, row <b> ${Number(index) + 3} </b>, column <b> "${newHeader.column}" </b> :  ${validationResult}`);
-                                }
-                            } catch (error) {
-                                // If there's an exception, add it to the errors array
-                                errors.push(`Error in sheet <b> "${sheetName}" </b>, row <b> ${Number(index) + 3} </b>, column <b> "${newHeader.column}" </b> : ${error.message}`);
-                            }
-                        }
-                    }
-
+                    const errors = validateRowData(row, headers, fileHeaders[sheetName]);
+                    allErrors = [...allErrors, ...errors];
                 }
             }
         }
     }
 
-    // If there are any errors, return them
-    if (errors.length > 0) {
-        return errors;
+    if (allErrors.length > 0) {
+        return allErrors;
     }
-
-    // If all cells are valid, return null
     return null;
 };
 
 exports.prepareProductData = (productDataArray, categoryId) => {
+    const usedKeys = { name: false, price: false, description: false };
+
     return productDataArray
-        .map((productData) => {
-            const product = {other: [], CategoryId: categoryId};
-            const usedKeys = {name: false, price: false, description: false};
+        .map((productData) => prepareSingleProduct(productData, usedKeys, categoryId))
+        .filter(filterIrrelevantProducts)
+        .filter(filterEmptyOtherWithCategoryId);
+};
 
-            productData.forEach((item) => {
-                const key = Object.keys(item)[0];
-                const value = item[key];
+const prepareSingleProduct = (productData, usedKeys, categoryId) => {
+    const product = { other: [], CategoryId: categoryId };
+    productData.forEach((item) => {
+        const key = Object.keys(item)[0];
+        const value = item[key];
 
-                if (["name", "price", "description"].includes(item.type) && (!usedKeys[item.type] || item.useInInvoice)) {
-                    product[item.type] = value;
-                    product[`${item.type}ColumnName`] = key;
-                    usedKeys[item.type] = true;
-                } else {
-                    product.other.push(item);
-                }
-            });
+        if (["name", "price", "description"].includes(item.type)) {
+            if (!usedKeys[item.type] || item.useInInvoice) {
+                product[item.type] = value;
+                product[`${item.type}ColumnName`] = key;
+                usedKeys[item.type] = true;
+            }
+        } else {
+            product.other.push(item);
+        }
+    });
+    return product;
+};
 
-            return product;
-        })
-        .filter((product) => {
-            return (product.name !== null || product.price !== null || product.description !== null || product.other.length > 0);
-        })
-        .filter((product) => {
-            return !(product.CategoryId !== null && product.other.length === 0);
-        });
+
+const filterIrrelevantProducts = (product) => {
+    return (
+        product.name !== null ||
+        product.price !== null ||
+        product.description !== null ||
+        product.other.length > 0
+    );
+};
+
+
+const filterEmptyOtherWithCategoryId = (product) => {
+    return !(product.CategoryId !== null && product.other.length === 0);
 };
 
 const validators = {
