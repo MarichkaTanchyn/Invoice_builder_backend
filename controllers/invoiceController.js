@@ -66,7 +66,7 @@ exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, n
                 paymentMethod: body.paymentMethod,
                 validTo: body.validUntil,
                 validFrom: body.validFrom,
-                totalAmount: body.summary.totalAmount,
+                totalAmount: body.summary.totalGrossValue,
                 paidAmount: body.paid,
                 documentType: body.documentType,
                 invoiceFileLink: Location,
