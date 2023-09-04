@@ -16,9 +16,14 @@ const hasPermission = async (employeeId, permissionName) => {
     return employee !== null;
 };
 
-const setAllPermissions = async (EmployeeId) => {
+const setAllPermissions = async (employeeId) => {
     const permissionEnum = await Permission.findAll();
-    let employee = await Employee.findByPk(EmployeeId);
+    let employee = await Employee.findByPk(employeeId);
+
+    if (!employee) {
+        throw new Error(`Employee with ID ${employeeId} not found.`);
+    }
+
     for (const permission of permissionEnum) {
         await employee.addPermission(permission);
     }

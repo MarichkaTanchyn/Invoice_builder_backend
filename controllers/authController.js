@@ -38,8 +38,7 @@ exports.companySignup = [validateRequest([], ['email', 'password', 'firmName']),
                     accepted: true
                 }
                 employee = await Employee.create(employee, {validate: true});
-
-                await permissionOperations.setAllPermissions(employee.PersonId)
+                await permissionOperations.setAllPermissions(employee.id)
 
                 res.send({"message": "success"})
             } else {
