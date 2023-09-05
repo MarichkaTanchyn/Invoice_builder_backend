@@ -50,7 +50,7 @@ const customerExists = async ({CustomerId}) => {
 const productExists = async ({ProductId}) => {
     let product = await Product.findByPk(ProductId);
     if (!product) {
-        throw new Error("Customer doesn't exist");
+        throw new Error("Product doesn't exist");
     }
     return true;
 }
