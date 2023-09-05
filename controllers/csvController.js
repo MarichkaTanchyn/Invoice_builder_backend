@@ -8,7 +8,7 @@ const {
     processSheetDataForCategory,
     validateSheetData,
     validateAllSheetsData,
-    prepareProductData,
+    prepareProductData, cleanCategories,
 } = require("../middleware/readExcel");
 
 const validateRequestBody = require('../middleware/validateRequestBody');
@@ -62,7 +62,8 @@ exports.createNewCategoryFromSheet = [validateRequestBody, validateRequest(['fil
             return;
         }
 
-        const categories = await processSheetDataForCategory(fileId, fileHeaders, headers);
+        const tmp = await processSheetDataForCategory(fileId, fileHeaders, headers);
+        const categories = await cleanCategories(tmp)
         const category = await Category.findByPk(categoryId);
 
         for (const [key, value] of Object.entries(categories)) {
@@ -71,7 +72,7 @@ exports.createNewCategoryFromSheet = [validateRequestBody, validateRequest(['fil
             };
             const newCategory = await Category.create(newCategoryData);
             const products = [prepareProductData(value, newCategory.id)];
-            await Product.bulkCreate(products);
+            await Product.bulkCreate(products[0]);
         }
 
         res.send("success");

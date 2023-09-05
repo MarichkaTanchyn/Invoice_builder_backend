@@ -147,6 +147,14 @@ exports.processSheetDataForCategory = async (fileKey, fileHeaders, sheetHeader) 
     return categories;
 };
 
+exports.cleanCategories = async (categories) =>{
+    for (let categoryName in categories) {
+        if (Array.isArray(categories[categoryName])) {
+            categories[categoryName] = categories[categoryName].filter(subArray => Array.isArray(subArray) && subArray.length > 0);
+        }
+    }
+    return categories;
+}
 
 exports.validateSheetData = async (fileKey, fileHeaders, headersRow) => {
     const workbook = await readFile(fileKey);
