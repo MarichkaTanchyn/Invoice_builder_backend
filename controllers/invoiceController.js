@@ -71,7 +71,7 @@ exports.createInvoice = [validateRequest(['EmployeeId'], []), async (req, res, n
                 documentType: body.documentType,
                 invoiceFileLink: Location,
                 CustomerId: body.customer.id,
-                EmployeeId: body.employee.id,
+                EmployeeId: req.params.EmployeeId,
                 CompanyId: body.companyDetails.id
             },
                 {validate: true});
