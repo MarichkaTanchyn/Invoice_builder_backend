@@ -107,3 +107,28 @@ const findCustomerWithPerson = async (customerId) => {
         include: [Person],
     });
 };
+
+exports.deleteCustomer  = [
+    validateRequest(['CustomerId'], []),
+    async (req, res, next) => {
+
+        try {
+            await IdVerifications.customerExists({CustomerId: req.params.CustomerId});
+            const customer = await Customer.findByPk(req.params.CustomerId)
+
+            await Customer.destroy({
+                where: {
+                    id: req.params.CustomerId
+                }
+            })
+            await Person.destroy({
+                where: {
+                    id: customer.PersonId
+                }
+            })
+            res.sendStatus(200);
+        } catch (err) {
+            next(err);
+        }
+
+    }]

@@ -12,4 +12,6 @@ router.post("/addCustomer/:CompanyId", authorize, customerController.addCustomer
 
 router.post("/updateCustomer/:CustomerId", authorize, customerController.updateCustomer);
 
+router.delete("/deleteCustomer/:CustomerId", authorize, customerController.deleteCustomer);
+
 module.exports = router;
